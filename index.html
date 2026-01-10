@@ -283,48 +283,243 @@
             opacity: 0.2;
         }
 
-        .links-section {
-            padding: 15px 25px;
-            background: #0f0f0f;
-            border-top: 1px solid #2a2a2a;
+        /* Login/Signup Page Styles */
+        .auth-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .auth-box {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h1 {
+            color: #fff;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            background: #0f0f0f;
+            border: 2px solid #2a2a2a;
+            color: #888;
+            cursor: pointer;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .auth-tab.active {
+            background: linear-gradient(135deg, #00ff88 0%, #00ddff 100%);
+            color: #0f0f0f;
+            border-color: transparent;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: #0f0f0f;
+            border: 2px solid #2a2a2a;
+            color: #fff;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+
+        .auth-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00ff88 0%, #00ddff 100%);
+            color: #0f0f0f;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .auth-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
+        }
+
+        .auth-error {
+            background: rgba(255, 50, 50, 0.1);
+            border: 1px solid rgba(255, 50, 50, 0.3);
+            color: #ff5050;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        /* Settings Modal */
+        .settings-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .settings-overlay.active {
+            display: flex;
+        }
+
+        .settings-modal {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #2a2a2a;
+        }
+
+        .settings-header h2 {
+            color: #fff;
+            font-size: 24px;
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
             justify-content: center;
         }
 
-        .link-btn {
-            padding: 8px 16px;
-            background: #1a1a1a;
-            color: #00ff88;
-            border: 1px solid #2a2a2a;
-            border-radius: 8px;
-            text-decoration: none;
+        .close-settings:hover {
+            color: #fff;
+        }
+
+        .setting-item {
+            margin-bottom: 25px;
+        }
+
+        .setting-item h3 {
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .setting-item p {
+            color: #888;
             font-size: 13px;
-            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 14px;
+            background: #ff5050;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
             transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
         }
 
-        .link-btn:hover {
-            background: #2a2a2a;
-            border-color: #00ff88;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 255, 136, 0.2);
+        .logout-btn:hover {
+            background: #ff3030;
+            transform: translateY(-2px);
         }
 
-        @media (max-width: 600px) {
-            .links-section {
-                padding: 12px 15px;
-                gap: 6px;
-            }
+        .settings-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 24px;
+            padding: 0;
+            transition: all 0.2s;
+        }
 
-            .link-btn {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
+        .settings-btn:hover {
+            color: #00ff88;
         }
 
         @media (max-width: 600px) {
@@ -349,10 +544,86 @@
     </style>
 </head>
 <body>
-    <div class="chat-container">
+    <!-- Login/Signup Page -->
+    <div class="auth-container" id="authContainer">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h1>💬 BS Chat</h1>
+                <p>Join the conversation</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Login</button>
+                <button class="auth-tab" data-tab="signup">Sign Up</button>
+            </div>
+
+            <div class="auth-error" id="authError"></div>
+
+            <!-- Login Form -->
+            <form class="auth-form active" id="loginForm">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" placeholder="Enter username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="auth-button">Login</button>
+            </form>
+
+            <!-- Signup Form -->
+            <form class="auth-form" id="signupForm">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="signupUsername" placeholder="Choose a username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" placeholder="Choose a password" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" placeholder="Confirm password" required>
+                </div>
+                <button type="submit" class="auth-button">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="settings-overlay" id="settingsOverlay">
+        <div class="settings-modal">
+            <div class="settings-header">
+                <h2>⚙️ Settings</h2>
+                <button class="close-settings" id="closeSettings">×</button>
+            </div>
+
+            <div class="setting-item">
+                <h3>Account</h3>
+                <p>Logged in as: <strong id="currentUsername"></strong></p>
+            </div>
+
+            <div class="setting-item">
+                <h3>Change Nickname</h3>
+                <p>Update your display name in the chat</p>
+                <div class="form-group">
+                    <input type="text" id="settingsNickname" placeholder="Enter new nickname">
+                </div>
+                <button class="auth-button" id="updateNicknameBtn">Update Nickname</button>
+            </div>
+
+            <div class="setting-item">
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-container" id="chatContainer" style="display: none;">
         <div class="chat-header">
             <h1>💬 BS Chat</h1>
             <div class="online-status">
+                <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
                 <div class="status-dot"></div>
                 <span>Connected</span>
             </div>
@@ -383,39 +654,12 @@
                 </svg>
             </button>
         </div>
-
-        <div class="links-section">
-            <a href="https://www.blooket.com/" target="_blank" class="link-btn">
-                🎮 Blooket
-            </a>
-            <a href="https://clever.com/in/italyisd" target="_blank" class="link-btn">
-                📚 Clever
-            </a>
-            <a href="https://www.italyisd.org/" target="_blank" class="link-btn">
-                🏫 Italy ISD
-            </a>
-            <a href="https://kahoot.it/" target="_blank" class="link-btn">
-                🎯 Kahoot
-            </a>
-            <a href="https://www.coolmathgames.com/" target="_blank" class="link-btn">
-                🧮 Cool Math Games
-            </a>
-            <a href="https://crazygames.no/" target="_blank" class="link-btn">
-                🎲 CrazyGames.no
-            </a>
-            <a href="https://www.crazygames.com/" target="_blank" class="link-btn">
-                🕹️ CrazyGames.com
-            </a>
-            <a href="https://kour.io/" target="_blank" class="link-btn">
-                🏃 Kour.io
-            </a>
-        </div>
     </div>
 
     <script type="module">
         // Firebase configuration
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, push, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, push, onValue, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBxOthers_will_need_this", // Add your actual API key
@@ -430,21 +674,247 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // Generate unique user ID
-        let userId = localStorage.getItem('chatUserId');
-        if (!userId) {
-            userId = 'user_' + Math.random().toString(36).substr(2, 9) + Date.now();
-            localStorage.setItem('chatUserId', userId);
+        // Auth Elements
+        const authContainer = document.getElementById('authContainer');
+        const chatContainer = document.getElementById('chatContainer');
+        const authError = document.getElementById('authError');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const settingsOverlay = document.getElementById('settingsOverlay');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const closeSettings = document.getElementById('closeSettings');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Current user
+        let currentUser = null;
+        let userId = null;
+        let currentNickname = null;
+
+        // Hash password (simple - in production use proper crypto)
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
         }
 
-        // Get saved nickname with random number
-        let currentNickname = localStorage.getItem('chatNickname');
-        if (!currentNickname) {
-            const randomNum = Math.floor(Math.random() * 9000) + 1000; // Random 4-digit number
-            currentNickname = `Anonymous_${randomNum}`;
-            localStorage.setItem('chatNickname', currentNickname);
+        // Check if user is logged in (from cookie/localStorage)
+        function checkAutoLogin() {
+            const savedUsername = localStorage.getItem('chatUsername');
+            const savedUserId = localStorage.getItem('chatUserId');
+            
+            if (savedUsername && savedUserId) {
+                // Verify user still exists in database
+                get(ref(database, `users/${savedUserId}`)).then(snapshot => {
+                    if (snapshot.exists()) {
+                        currentUser = savedUsername;
+                        userId = savedUserId;
+                        showChat();
+                    } else {
+                        // User deleted, clear localStorage
+                        localStorage.removeItem('chatUsername');
+                        localStorage.removeItem('chatUserId');
+                        showAuth();
+                    }
+                }).catch(() => {
+                    showAuth();
+                });
+            } else {
+                showAuth();
+            }
         }
-        document.getElementById('nicknameInput').value = currentNickname;
+
+        // Show auth page
+        function showAuth() {
+            authContainer.style.display = 'flex';
+            chatContainer.style.display = 'none';
+        }
+
+        // Show chat
+        function showChat() {
+            authContainer.style.display = 'none';
+            chatContainer.style.display = 'flex';
+            initializeChat();
+        }
+
+        // Show error
+        function showError(message) {
+            authError.textContent = message;
+            authError.style.display = 'block';
+            setTimeout(() => {
+                authError.style.display = 'none';
+            }, 5000);
+        }
+
+        // Auth tabs
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + 'Form').classList.add('active');
+            });
+        });
+
+        // Signup
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('signupUsername').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+            if (username.length < 3) {
+                showError('Username must be at least 3 characters');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            // Check if username exists
+            const usersRef = ref(database, 'users');
+            const snapshot = await get(usersRef);
+            const users = snapshot.val() || {};
+            
+            const userExists = Object.values(users).some(u => u.username.toLowerCase() === username.toLowerCase());
+            
+            if (userExists) {
+                showError('Username already taken');
+                return;
+            }
+
+            // Create user
+            const newUserId = 'user_' + Math.random().toString(36).substr(2, 9) + Date.now();
+            const hashedPassword = await hashPassword(password);
+            
+            await set(ref(database, `users/${newUserId}`), {
+                username: username,
+                password: hashedPassword,
+                createdAt: Date.now()
+            });
+
+            // Save to localStorage
+            localStorage.setItem('chatUsername', username);
+            localStorage.setItem('chatUserId', newUserId);
+            
+            currentUser = username;
+            userId = newUserId;
+            
+            showChat();
+        });
+
+        // Login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            // Find user
+            const usersRef = ref(database, 'users');
+            const snapshot = await get(usersRef);
+            const users = snapshot.val() || {};
+            
+            let foundUser = null;
+            let foundUserId = null;
+
+            for (const [uid, user] of Object.entries(users)) {
+                if (user.username.toLowerCase() === username.toLowerCase()) {
+                    foundUser = user;
+                    foundUserId = uid;
+                    break;
+                }
+            }
+
+            if (!foundUser) {
+                showError('Username not found');
+                return;
+            }
+
+            const hashedPassword = await hashPassword(password);
+            
+            if (foundUser.password !== hashedPassword) {
+                showError('Incorrect password');
+                return;
+            }
+
+            // Save to localStorage
+            localStorage.setItem('chatUsername', foundUser.username);
+            localStorage.setItem('chatUserId', foundUserId);
+            
+            currentUser = foundUser.username;
+            userId = foundUserId;
+            
+            showChat();
+        });
+
+        // Settings
+        settingsBtn.addEventListener('click', () => {
+            document.getElementById('currentUsername').textContent = currentUser;
+            document.getElementById('settingsNickname').value = currentNickname;
+            settingsOverlay.classList.add('active');
+        });
+
+        closeSettings.addEventListener('click', () => {
+            settingsOverlay.classList.remove('active');
+        });
+
+        settingsOverlay.addEventListener('click', (e) => {
+            if (e.target === settingsOverlay) {
+                settingsOverlay.classList.remove('active');
+            }
+        });
+
+        // Update nickname from settings
+        document.getElementById('updateNicknameBtn').addEventListener('click', () => {
+            const newNickname = document.getElementById('settingsNickname').value.trim();
+            if (newNickname && newNickname.length > 0) {
+                const oldNickname = currentNickname;
+                currentNickname = newNickname;
+                localStorage.setItem('chatNickname', currentNickname);
+                document.getElementById('nicknameInput').value = currentNickname;
+                
+                // Send system message
+                const systemMsgRef = push(ref(database, 'chat/messages'));
+                set(systemMsgRef, {
+                    type: 'system',
+                    text: `${oldNickname} changed their name to ${currentNickname}`,
+                    timestamp: Date.now()
+                });
+
+                settingsOverlay.classList.remove('active');
+            }
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('chatUsername');
+            localStorage.removeItem('chatUserId');
+            currentUser = null;
+            userId = null;
+            settingsOverlay.classList.remove('active');
+            showAuth();
+        });
+
+        // Initialize chat (existing chat code)
+        function initializeChat() {
+            // Get saved nickname with random number
+            currentNickname = localStorage.getItem('chatNickname');
+            if (!currentNickname) {
+                currentNickname = currentUser; // Use username as default nickname
+                localStorage.setItem('chatNickname', currentNickname);
+            }
+            document.getElementById('nicknameInput').value = currentNickname;
+
+            document.getElementById('nicknameInput').value = currentNickname;
 
         // Track last join time to prevent spam
         const JOIN_COOLDOWN = 5 * 60 * 1000; // 5 minutes in milliseconds
@@ -659,6 +1129,11 @@
                 });
             }, { onlyOnce: true });
         }, 30000); // Check every 30 seconds
+        
+        } // End of initializeChat function
+
+        // Check for auto-login on page load
+        checkAutoLogin();
     </script>
 </body>
 </html>
