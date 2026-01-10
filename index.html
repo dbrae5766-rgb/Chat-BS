@@ -260,6 +260,50 @@
             transform: none;
         }
 
+        .quick-links {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .quick-links-label {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .quick-link-btn {
+            padding: 8px 14px;
+            background: white;
+            border: 2px solid #e9ecef;
+            color: #495057;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .quick-link-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .quick-link-btn:active {
+            transform: translateY(0);
+        }
+
         .empty-state {
             text-align: center;
             color: #9ca3af;
@@ -292,13 +336,29 @@
             .message.own .message-text {
                 max-width: 85%;
             }
+
+            .quick-links {
+                padding: 10px;
+                gap: 6px;
+            }
+
+            .quick-link-btn {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+
+            .quick-links-label {
+                width: 100%;
+                text-align: center;
+                margin-bottom: 4px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h1>BS Chat</h1>
+            <h1>💬 BS Chat</h1>
             <div class="online-status">
                 <div class="status-dot"></div>
                 <span>Connected</span>
