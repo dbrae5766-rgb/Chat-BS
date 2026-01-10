@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Time Chat</title>
+    <title>BS Chat</title>
     <style>
         * {
             margin: 0;
@@ -298,7 +298,7 @@
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h1>💬 Real-Time Chat</h1>
+            <h1>BS Chat</h1>
             <div class="online-status">
                 <div class="status-dot"></div>
                 <span>Connected</span>
@@ -357,9 +357,18 @@
             localStorage.setItem('chatUserId', userId);
         }
 
-        // Get saved nickname
-        let currentNickname = localStorage.getItem('chatNickname') || 'Anonymous';
+        // Get saved nickname with random number
+        let currentNickname = localStorage.getItem('chatNickname');
+        if (!currentNickname) {
+            const randomNum = Math.floor(Math.random() * 9000) + 1000; // Random 4-digit number
+            currentNickname = `Anonymous_${randomNum}`;
+            localStorage.setItem('chatNickname', currentNickname);
+        }
         document.getElementById('nicknameInput').value = currentNickname;
+
+        // Track last join time to prevent spam
+        const JOIN_COOLDOWN = 5 * 60 * 1000; // 5 minutes in milliseconds
+        const MESSAGE_LIFETIME = 5 * 60 * 1000; // 5 minutes in milliseconds
 
         // Elements
         const messagesContainer = document.getElementById('messagesContainer');
@@ -394,10 +403,25 @@
             }
         });
 
-        // Send message
+        // Send message with rate limiting
+        let lastMessageTime = 0;
+        const MESSAGE_COOLDOWN = 1000; // 1 second between messages
+
         function sendMessage() {
             const messageText = messageInput.value.trim();
             if (!messageText) return;
+
+            const currentTime = Date.now();
+            const timeSinceLastMessage = currentTime - lastMessageTime;
+
+            if (timeSinceLastMessage < MESSAGE_COOLDOWN) {
+                // Show brief warning (optional)
+                messageInput.placeholder = 'Please wait before sending another message...';
+                setTimeout(() => {
+                    messageInput.placeholder = 'Type a message...';
+                }, 2000);
+                return;
+            }
 
             const messageRef = push(ref(database, 'chat/messages'));
             set(messageRef, {
@@ -405,9 +429,10 @@
                 text: messageText,
                 nickname: currentNickname,
                 userId: userId,
-                timestamp: Date.now()
+                timestamp: currentTime
             });
 
+            lastMessageTime = currentTime;
             messageInput.value = '';
             messageInput.focus();
         }
@@ -489,35 +514,71 @@
             return text.replace(/[&<>"']/g, m => map[m]);
         }
 
-        // Send join message
+        // Send join message only if cooldown has passed
         window.addEventListener('load', () => {
-            const joinMsgRef = push(ref(database, 'chat/messages'));
-            set(joinMsgRef, {
-                type: 'system',
-                text: `${currentNickname} joined the chat`,
-                timestamp: Date.now()
-            });
+            const currentTime = Date.now();
+            
+            // Check last join time from Firebase (prevents multi-device spam)
+            const userJoinRef = ref(database, `chat/userJoins/${userId}`);
+            onValue(userJoinRef, (snapshot) => {
+                const lastJoin = snapshot.val();
+                const lastJoinTimestamp = lastJoin ? lastJoin.timestamp : 0;
+                const timeSinceLastJoin = currentTime - lastJoinTimestamp;
+                
+                if (timeSinceLastJoin >= JOIN_COOLDOWN) {
+                    const joinMsgRef = push(ref(database, 'chat/messages'));
+                    set(joinMsgRef, {
+                        type: 'system',
+                        text: `${currentNickname} joined the chat`,
+                        timestamp: currentTime,
+                        userId: userId
+                    });
+                    
+                    // Update last join time in Firebase
+                    set(userJoinRef, {
+                        timestamp: currentTime,
+                        nickname: currentNickname
+                    });
+                }
+            }, { onlyOnce: true });
         });
 
-        // Optional: Clear old messages (keep last 100)
+        // Auto-delete messages older than 5 minutes
         setInterval(() => {
             onValue(messagesRef, (snapshot) => {
                 const messages = snapshot.val();
                 if (!messages) return;
 
+                const currentTime = Date.now();
                 const messageArray = Object.entries(messages)
-                    .map(([id, msg]) => ({ id, ...msg }))
-                    .sort((a, b) => a.timestamp - b.timestamp);
+                    .map(([id, msg]) => ({ id, ...msg }));
 
-                if (messageArray.length > 100) {
-                    // Remove oldest messages
-                    const toRemove = messageArray.slice(0, messageArray.length - 100);
-                    toRemove.forEach(msg => {
+                // Remove messages older than 5 minutes
+                messageArray.forEach(msg => {
+                    const messageAge = currentTime - msg.timestamp;
+                    if (messageAge > MESSAGE_LIFETIME) {
                         remove(ref(database, `chat/messages/${msg.id}`));
-                    });
-                }
+                    }
+                });
             }, { onlyOnce: true });
-        }, 60000); // Check every minute
+
+            // Also clean up old userJoins data (older than 1 hour)
+            const userJoinsRef = ref(database, 'chat/userJoins');
+            onValue(userJoinsRef, (snapshot) => {
+                const userJoins = snapshot.val();
+                if (!userJoins) return;
+
+                const currentTime = Date.now();
+                const oneHour = 60 * 60 * 1000;
+
+                Object.entries(userJoins).forEach(([uid, data]) => {
+                    const age = currentTime - data.timestamp;
+                    if (age > oneHour) {
+                        remove(ref(database, `chat/userJoins/${uid}`));
+                    }
+                });
+            }, { onlyOnce: true });
+        }, 30000); // Check every 30 seconds
     </script>
 </body>
 </html>
