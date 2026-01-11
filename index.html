@@ -829,7 +829,10 @@
             </div>
 
             <div class="upload-progress" id="uploadProgress">
-                <div class="progress-text">Uploading...</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div class="progress-text">Uploading... (10s timeout)</div>
+                    <button class="remove-file-btn" id="cancelUploadBtn" style="padding: 6px 12px; font-size: 11px;">Cancel</button>
+                </div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill" style="width: 0%"></div>
                 </div>
@@ -894,6 +897,28 @@
         const database = getDatabase(app);
         const storage = getStorage(app);
 
+        // Log Firebase Storage setup instructions
+        console.log('%c📦 FIREBASE STORAGE SETUP REQUIRED FOR FILE UPLOADS', 'color: #ff8800; font-size: 16px; font-weight: bold;');
+        console.log('%cIf file uploads are stuck or timing out, follow these steps:', 'color: #00ff88; font-size: 14px;');
+        console.log('%c1. Go to https://console.firebase.google.com', 'color: white; font-size: 12px;');
+        console.log('%c2. Select your project: bs-drawing', 'color: white; font-size: 12px;');
+        console.log('%c3. Click "Storage" in the left sidebar', 'color: white; font-size: 12px;');
+        console.log('%c4. Click "Get Started" if Storage is not enabled', 'color: white; font-size: 12px;');
+        console.log('%c5. Go to the "Rules" tab', 'color: white; font-size: 12px;');
+        console.log('%c6. Replace the rules with this:', 'color: white; font-size: 12px;');
+        console.log(`%c
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}`, 'color: #00ddff; font-size: 12px; background: #1a1a1a; padding: 10px;');
+        console.log('%c7. Click "Publish" to save the rules', 'color: white; font-size: 12px;');
+        console.log('%c⚠️ Note: These rules allow anyone to upload. For production, add proper authentication.', 'color: #ff5050; font-size: 12px;');
+        console.log(' ');
+
         // Auth Elements
         const authContainer = document.getElementById('authContainer');
         const chatContainer = document.getElementById('chatContainer');
@@ -924,6 +949,7 @@
         let selectedFile = null;
         let fileType = null;
         let userIP = null;
+        let currentUploadTask = null; // Track current upload for cancellation
         const VIP_IP = '69.170.112.226'; // Special IP address with orange border
 
         // Hash password
@@ -1246,6 +1272,18 @@
             audioInput.value = '';
         });
 
+        // Cancel upload button
+        const cancelUploadBtn = document.getElementById('cancelUploadBtn');
+        cancelUploadBtn.addEventListener('click', () => {
+            if (currentUploadTask) {
+                currentUploadTask.cancel();
+                currentUploadTask = null;
+                uploadProgress.classList.remove('active');
+                progressFill.style.width = '0%';
+                console.log('Upload cancelled by user');
+            }
+        });
+
         // Upload file to Firebase Storage
         async function uploadFile(file, type) {
             const timestamp = Date.now();
@@ -1255,26 +1293,31 @@
             uploadProgress.classList.add('active');
             
             const uploadTask = uploadBytesResumable(fileRef, file);
+            currentUploadTask = uploadTask; // Store for cancellation
 
             return new Promise((resolve, reject) => {
-                // Add timeout to prevent hanging
+                // Add timeout to prevent hanging - reduced to 10 seconds
                 const timeout = setTimeout(() => {
                     uploadProgress.classList.remove('active');
                     progressFill.style.width = '0%';
-                    reject(new Error('Upload timeout - please check your Firebase Storage configuration'));
-                }, 30000); // 30 second timeout
+                    currentUploadTask = null;
+                    reject(new Error('Upload timeout (10s) - Firebase Storage may not be configured. Check console for setup instructions.'));
+                }, 10000); // 10 second timeout
 
                 uploadTask.on('state_changed',
                     (snapshot) => {
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                         progressFill.style.width = progress + '%';
-                        console.log('Upload progress:', progress + '%');
+                        console.log('Upload progress:', progress.toFixed(1) + '%');
                     },
                     (error) => {
                         clearTimeout(timeout);
                         uploadProgress.classList.remove('active');
                         progressFill.style.width = '0%';
+                        currentUploadTask = null;
                         console.error('Upload error:', error);
+                        console.error('Error code:', error.code);
+                        console.error('Error message:', error.message);
                         reject(error);
                     },
                     async () => {
@@ -1283,11 +1326,13 @@
                             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                             uploadProgress.classList.remove('active');
                             progressFill.style.width = '0%';
+                            currentUploadTask = null;
                             console.log('Upload successful:', downloadURL);
                             resolve(downloadURL);
                         } catch (error) {
                             uploadProgress.classList.remove('active');
                             progressFill.style.width = '0%';
+                            currentUploadTask = null;
                             console.error('Error getting download URL:', error);
                             reject(error);
                         }
