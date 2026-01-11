@@ -190,6 +190,26 @@
             border: 1px solid #2a2a2a;
         }
 
+        .message-media {
+            background: #1a1a1a;
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+            margin-top: 5px;
+        }
+
+        .message-media img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            display: block;
+        }
+
+        .message-media audio {
+            width: 100%;
+            max-width: 300px;
+        }
+
         .message.own .message-nickname {
             color: #00ddff;
         }
@@ -201,6 +221,11 @@
             max-width: 70%;
             border: none;
             font-weight: 500;
+        }
+
+        .message.own .message-media {
+            margin-left: auto;
+            max-width: 70%;
         }
 
         .message.own .message-header {
@@ -219,11 +244,15 @@
             padding: 20px 25px;
             background: #1a1a1a;
             border-top: 1px solid #2a2a2a;
-            display: flex;
-            gap: 12px;
         }
 
-        .input-container input {
+        .input-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .input-container input[type="text"] {
             flex: 1;
             padding: 14px 18px;
             border: 2px solid #2a2a2a;
@@ -234,7 +263,7 @@
             transition: all 0.2s;
         }
 
-        .input-container input:focus {
+        .input-container input[type="text"]:focus {
             outline: none;
             border-color: #00ff88;
         }
@@ -267,6 +296,125 @@
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+        }
+
+        .attachment-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .attachment-btn {
+            padding: 10px 16px;
+            background: #2a2a2a;
+            color: #888;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .attachment-btn:hover {
+            background: #3a3a3a;
+            color: #00ff88;
+        }
+
+        .attachment-btn.active {
+            background: #00ff88;
+            color: #0f0f0f;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-preview {
+            margin-top: 10px;
+            padding: 12px;
+            background: #0f0f0f;
+            border: 2px solid #2a2a2a;
+            border-radius: 10px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-preview.active {
+            display: flex;
+        }
+
+        .file-preview-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-preview img {
+            max-width: 60px;
+            max-height: 60px;
+            border-radius: 6px;
+        }
+
+        .file-preview-info {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .file-preview-name {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .remove-file-btn {
+            padding: 8px 16px;
+            background: #ff5050;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .remove-file-btn:hover {
+            background: #ff3030;
+        }
+
+        .upload-progress {
+            margin-top: 10px;
+            padding: 12px;
+            background: #0f0f0f;
+            border: 2px solid #2a2a2a;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .upload-progress.active {
+            display: block;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #2a2a2a;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #00ff88 0%, #00ddff 100%);
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            color: #888;
+            font-size: 13px;
         }
 
         .empty-state {
@@ -537,7 +685,8 @@
                 font-size: 20px;
             }
 
-            .message.own .message-text {
+            .message.own .message-text,
+            .message.own .message-media {
                 max-width: 85%;
             }
         }
@@ -645,14 +794,44 @@
         </div>
 
         <div class="input-container">
-            <input type="text" id="messageInput" placeholder="Type a message..." maxlength="500">
-            <button class="send-button" id="sendBtn">
-                <span>Send</span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-            </button>
+            <div class="file-preview" id="filePreview">
+                <div class="file-preview-content" id="filePreviewContent">
+                    <div class="file-preview-info">
+                        <div class="file-preview-name" id="fileName">No file selected</div>
+                    </div>
+                </div>
+                <button class="remove-file-btn" id="removeFileBtn">Remove</button>
+            </div>
+
+            <div class="upload-progress" id="uploadProgress">
+                <div class="progress-text">Uploading...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="attachment-buttons">
+                <button class="attachment-btn" id="imageBtn">
+                    📷 Image
+                </button>
+                <button class="attachment-btn" id="audioBtn">
+                    🎵 Audio
+                </button>
+            </div>
+
+            <input type="file" id="imageInput" class="file-input" accept="image/*">
+            <input type="file" id="audioInput" class="file-input" accept="audio/*">
+
+            <div class="input-row">
+                <input type="text" id="messageInput" placeholder="Type a message..." maxlength="500">
+                <button class="send-button" id="sendBtn">
+                    <span>Send</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -660,9 +839,10 @@
         // Firebase configuration
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, set, push, onValue, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBxOthers_will_need_this", // Add your actual API key
+            apiKey: "AIzaSyBxOthers_will_need_this",
             authDomain: "bs-drawing.firebaseapp.com",
             databaseURL: "https://bs-drawing-default-rtdb.firebaseio.com",
             projectId: "bs-drawing",
@@ -673,6 +853,7 @@
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
+        const storage = getStorage(app);
 
         // Auth Elements
         const authContainer = document.getElementById('authContainer');
@@ -685,12 +866,26 @@
         const closeSettings = document.getElementById('closeSettings');
         const logoutBtn = document.getElementById('logoutBtn');
 
+        // File upload elements
+        const imageBtn = document.getElementById('imageBtn');
+        const audioBtn = document.getElementById('audioBtn');
+        const imageInput = document.getElementById('imageInput');
+        const audioInput = document.getElementById('audioInput');
+        const filePreview = document.getElementById('filePreview');
+        const filePreviewContent = document.getElementById('filePreviewContent');
+        const fileName = document.getElementById('fileName');
+        const removeFileBtn = document.getElementById('removeFileBtn');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressFill = document.getElementById('progressFill');
+
         // Current user
         let currentUser = null;
         let userId = null;
         let currentNickname = null;
+        let selectedFile = null;
+        let fileType = null;
 
-        // Hash password (simple - in production use proper crypto)
+        // Hash password
         async function hashPassword(password) {
             const encoder = new TextEncoder();
             const data = encoder.encode(password);
@@ -700,20 +895,18 @@
                 .join('');
         }
 
-        // Check if user is logged in (from cookie/localStorage)
+        // Check if user is logged in
         function checkAutoLogin() {
             const savedUsername = localStorage.getItem('chatUsername');
             const savedUserId = localStorage.getItem('chatUserId');
             
             if (savedUsername && savedUserId) {
-                // Verify user still exists in database
                 get(ref(database, `users/${savedUserId}`)).then(snapshot => {
                     if (snapshot.exists()) {
                         currentUser = savedUsername;
                         userId = savedUserId;
                         showChat();
                     } else {
-                        // User deleted, clear localStorage
                         localStorage.removeItem('chatUsername');
                         localStorage.removeItem('chatUserId');
                         showAuth();
@@ -780,7 +973,6 @@
                 return;
             }
 
-            // Check if username exists
             const usersRef = ref(database, 'users');
             const snapshot = await get(usersRef);
             const users = snapshot.val() || {};
@@ -792,7 +984,6 @@
                 return;
             }
 
-            // Create user
             const newUserId = 'user_' + Math.random().toString(36).substr(2, 9) + Date.now();
             const hashedPassword = await hashPassword(password);
             
@@ -802,7 +993,6 @@
                 createdAt: Date.now()
             });
 
-            // Save to localStorage
             localStorage.setItem('chatUsername', username);
             localStorage.setItem('chatUserId', newUserId);
             
@@ -818,7 +1008,6 @@
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
 
-            // Find user
             const usersRef = ref(database, 'users');
             const snapshot = await get(usersRef);
             const users = snapshot.val() || {};
@@ -846,7 +1035,6 @@
                 return;
             }
 
-            // Save to localStorage
             localStorage.setItem('chatUsername', foundUser.username);
             localStorage.setItem('chatUserId', foundUserId);
             
@@ -882,7 +1070,6 @@
                 localStorage.setItem('chatNickname', currentNickname);
                 document.getElementById('nicknameInput').value = currentNickname;
                 
-                // Send system message
                 const systemMsgRef = push(ref(database, 'chat/messages'));
                 set(systemMsgRef, {
                     type: 'system',
@@ -904,233 +1091,386 @@
             showAuth();
         });
 
-        // Initialize chat (existing chat code)
-        function initializeChat() {
-            // Get saved nickname with random number
-            currentNickname = localStorage.getItem('chatNickname');
-            if (!currentNickname) {
-                currentNickname = currentUser; // Use username as default nickname
-                localStorage.setItem('chatNickname', currentNickname);
-            }
-            document.getElementById('nicknameInput').value = currentNickname;
-
-            document.getElementById('nicknameInput').value = currentNickname;
-
-        // Track last join time to prevent spam
-        const JOIN_COOLDOWN = 5 * 60 * 1000; // 5 minutes in milliseconds
-        const MESSAGE_LIFETIME = 5 * 60 * 1000; // 5 minutes in milliseconds
-
-        // Elements
-        const messagesContainer = document.getElementById('messagesContainer');
-        const messageInput = document.getElementById('messageInput');
-        const sendBtn = document.getElementById('sendBtn');
-        const nicknameInput = document.getElementById('nicknameInput');
-        const setNicknameBtn = document.getElementById('setNicknameBtn');
-
-        // Set nickname
-        setNicknameBtn.addEventListener('click', () => {
-            const newNickname = nicknameInput.value.trim();
-            if (newNickname && newNickname.length > 0) {
-                const oldNickname = currentNickname;
-                currentNickname = newNickname;
-                localStorage.setItem('chatNickname', currentNickname);
-                
-                // Send system message
-                const systemMsgRef = push(ref(database, 'chat/messages'));
-                set(systemMsgRef, {
-                    type: 'system',
-                    text: `${oldNickname} changed their name to ${currentNickname}`,
-                    timestamp: Date.now()
-                });
-
-                nicknameInput.blur();
-            }
+        // File upload handlers
+        imageBtn.addEventListener('click', () => {
+            imageInput.click();
         });
 
-        nicknameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                setNicknameBtn.click();
-            }
+        audioBtn.addEventListener('click', () => {
+            audioInput.click();
         });
 
-        // Send message with rate limiting
-        let lastMessageTime = 0;
-        const MESSAGE_COOLDOWN = 1000; // 1 second between messages
+        imageInput.addEventListener('change', (e) => {
+            handleFileSelect(e.target.files[0], 'image');
+        });
 
-        function sendMessage() {
-            const messageText = messageInput.value.trim();
-            if (!messageText) return;
+        audioInput.addEventListener('change', (e) => {
+            handleFileSelect(e.target.files[0], 'audio');
+        });
 
-            const currentTime = Date.now();
-            const timeSinceLastMessage = currentTime - lastMessageTime;
+        function handleFileSelect(file, type) {
+            if (!file) return;
 
-            if (timeSinceLastMessage < MESSAGE_COOLDOWN) {
-                // Show brief warning (optional)
-                messageInput.placeholder = 'Please wait before sending another message...';
-                setTimeout(() => {
-                    messageInput.placeholder = 'Type a message...';
-                }, 2000);
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
                 return;
             }
 
-            const messageRef = push(ref(database, 'chat/messages'));
-            set(messageRef, {
-                type: 'message',
-                text: messageText,
-                nickname: currentNickname,
-                userId: userId,
-                timestamp: currentTime
-            });
+            selectedFile = file;
+            fileType = type;
 
-            lastMessageTime = currentTime;
-            messageInput.value = '';
-            messageInput.focus();
-        }
+            // Show preview
+            filePreview.classList.add('active');
+            fileName.textContent = file.name;
 
-        sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        // Listen for messages
-        const messagesRef = ref(database, 'chat/messages');
-        onValue(messagesRef, (snapshot) => {
-            const messages = snapshot.val();
-            
-            if (!messages) {
-                messagesContainer.innerHTML = `
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        <div>No messages yet. Start the conversation!</div>
+            if (type === 'image') {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    filePreviewContent.innerHTML = '';
+                    filePreviewContent.appendChild(img);
+                    const info = document.createElement('div');
+                    info.className = 'file-preview-info';
+                    info.innerHTML = `<div class="file-preview-name">${file.name}</div>`;
+                    filePreviewContent.appendChild(info);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                filePreviewContent.innerHTML = `
+                    <div class="file-preview-info">
+                        <div class="file-preview-name">🎵 ${file.name}</div>
+                        <div>${(file.size / 1024).toFixed(2)} KB</div>
                     </div>
                 `;
-                return;
             }
-
-            // Sort messages by timestamp
-            const sortedMessages = Object.entries(messages)
-                .map(([id, msg]) => ({ id, ...msg }))
-                .sort((a, b) => a.timestamp - b.timestamp);
-
-            // Render messages
-            messagesContainer.innerHTML = '';
-            sortedMessages.forEach(msg => {
-                const messageDiv = document.createElement('div');
-                
-                if (msg.type === 'system') {
-                    messageDiv.className = 'system-message';
-                    messageDiv.textContent = msg.text;
-                } else {
-                    messageDiv.className = 'message';
-                    if (msg.userId === userId) {
-                        messageDiv.classList.add('own');
-                    }
-
-                    const time = new Date(msg.timestamp).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                    });
-
-                    messageDiv.innerHTML = `
-                        <div class="message-header">
-                            <span class="message-nickname">${escapeHtml(msg.nickname)}</span>
-                            <span class="message-time">${time}</span>
-                        </div>
-                        <div class="message-text">${escapeHtml(msg.text)}</div>
-                    `;
-                }
-
-                messagesContainer.appendChild(messageDiv);
-            });
-
-            // Auto scroll to bottom
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        });
-
-        // Utility function to escape HTML
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
         }
 
-        // Send join message only if cooldown has passed
-        window.addEventListener('load', () => {
-            const currentTime = Date.now();
-            
-            // Check last join time from Firebase (prevents multi-device spam)
-            const userJoinRef = ref(database, `chat/userJoins/${userId}`);
-            onValue(userJoinRef, (snapshot) => {
-                const lastJoin = snapshot.val();
-                const lastJoinTimestamp = lastJoin ? lastJoin.timestamp : 0;
-                const timeSinceLastJoin = currentTime - lastJoinTimestamp;
-                
-                if (timeSinceLastJoin >= JOIN_COOLDOWN) {
-                    const joinMsgRef = push(ref(database, 'chat/messages'));
-                    set(joinMsgRef, {
-                        type: 'system',
-                        text: `${currentNickname} joined the chat`,
-                        timestamp: currentTime,
-                        userId: userId
-                    });
-                    
-                    // Update last join time in Firebase
-                    set(userJoinRef, {
-                        timestamp: currentTime,
-                        nickname: currentNickname
-                    });
-                }
-            }, { onlyOnce: true });
+        removeFileBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileType = null;
+            filePreview.classList.remove('active');
+            imageInput.value = '';
+            audioInput.value = '';
         });
 
-        // Auto-delete messages older than 5 minutes
-        setInterval(() => {
+        // Upload file to Firebase Storage
+        async function uploadFile(file, type) {
+            const timestamp = Date.now();
+            const filename = `${type}s/${userId}_${timestamp}_${file.name}`;
+            const fileRef = storageRef(storage, filename);
+            
+            uploadProgress.classList.add('active');
+            
+            const uploadTask = uploadBytesResumable(fileRef, file);
+
+            return new Promise((resolve, reject) => {
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressFill.style.width = progress + '%';
+                    },
+                    (error) => {
+                        uploadProgress.classList.remove('active');
+                        reject(error);
+                    },
+                    async () => {
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        uploadProgress.classList.remove('active');
+                        progressFill.style.width = '0%';
+                        resolve(downloadURL);
+                    }
+                );
+            });
+        }
+
+        // Initialize chat
+        function initializeChat() {
+            currentNickname = localStorage.getItem('chatNickname');
+            if (!currentNickname) {
+                currentNickname = currentUser;
+                localStorage.setItem('chatNickname', currentNickname);
+            }
+            document.getElementById('nicknameInput').value = currentNickname;
+
+            const JOIN_COOLDOWN = 5 * 60 * 1000;
+            const MESSAGE_LIFETIME = 5 * 60 * 1000;
+
+            const messagesContainer = document.getElementById('messagesContainer');
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const nicknameInput = document.getElementById('nicknameInput');
+            const setNicknameBtn = document.getElementById('setNicknameBtn');
+
+            // Set nickname
+            setNicknameBtn.addEventListener('click', () => {
+                const newNickname = nicknameInput.value.trim();
+                if (newNickname && newNickname.length > 0) {
+                    const oldNickname = currentNickname;
+                    currentNickname = newNickname;
+                    localStorage.setItem('chatNickname', currentNickname);
+                    
+                    const systemMsgRef = push(ref(database, 'chat/messages'));
+                    set(systemMsgRef, {
+                        type: 'system',
+                        text: `${oldNickname} changed their name to ${currentNickname}`,
+                        timestamp: Date.now()
+                    });
+
+                    nicknameInput.blur();
+                }
+            });
+
+            nicknameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    setNicknameBtn.click();
+                }
+            });
+
+            // Send message with rate limiting
+            let lastMessageTime = 0;
+            const MESSAGE_COOLDOWN = 1000;
+
+            async function sendMessage() {
+                const messageText = messageInput.value.trim();
+                
+                // Check if there's either text or a file
+                if (!messageText && !selectedFile) return;
+
+                const currentTime = Date.now();
+                const timeSinceLastMessage = currentTime - lastMessageTime;
+
+                if (timeSinceLastMessage < MESSAGE_COOLDOWN) {
+                    messageInput.placeholder = 'Please wait before sending another message...';
+                    setTimeout(() => {
+                        messageInput.placeholder = 'Type a message...';
+                    }, 2000);
+                    return;
+                }
+
+                const messageData = {
+                    type: 'message',
+                    nickname: currentNickname,
+                    userId: userId,
+                    timestamp: currentTime
+                };
+
+                // Add text if present
+                if (messageText) {
+                    messageData.text = messageText;
+                }
+
+                // Upload file if present
+                if (selectedFile) {
+                    try {
+                        const fileURL = await uploadFile(selectedFile, fileType);
+                        messageData.fileURL = fileURL;
+                        messageData.fileType = fileType;
+                        messageData.fileName = selectedFile.name;
+                    } catch (error) {
+                        console.error('Error uploading file:', error);
+                        alert('Failed to upload file. Please try again.');
+                        return;
+                    }
+                }
+
+                const messageRef = push(ref(database, 'chat/messages'));
+                await set(messageRef, messageData);
+
+                lastMessageTime = currentTime;
+                messageInput.value = '';
+                selectedFile = null;
+                fileType = null;
+                filePreview.classList.remove('active');
+                imageInput.value = '';
+                audioInput.value = '';
+                messageInput.focus();
+            }
+
+            sendBtn.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            // Listen for messages - Fixed ordering issue
+            const messagesRef = ref(database, 'chat/messages');
+            let isInitialLoad = true;
+            let previousMessageIds = new Set();
+
             onValue(messagesRef, (snapshot) => {
                 const messages = snapshot.val();
-                if (!messages) return;
+                
+                if (!messages) {
+                    messagesContainer.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <div>No messages yet. Start the conversation!</div>
+                        </div>
+                    `;
+                    return;
+                }
 
-                const currentTime = Date.now();
-                const messageArray = Object.entries(messages)
-                    .map(([id, msg]) => ({ id, ...msg }));
+                // Sort messages by timestamp
+                const sortedMessages = Object.entries(messages)
+                    .map(([id, msg]) => ({ id, ...msg }))
+                    .sort((a, b) => a.timestamp - b.timestamp);
 
-                // Remove messages older than 5 minutes
-                messageArray.forEach(msg => {
-                    const messageAge = currentTime - msg.timestamp;
-                    if (messageAge > MESSAGE_LIFETIME) {
-                        remove(ref(database, `chat/messages/${msg.id}`));
+                // Detect new messages
+                const currentMessageIds = new Set(sortedMessages.map(m => m.id));
+                const newMessages = sortedMessages.filter(m => !previousMessageIds.has(m.id));
+
+                // Only scroll if it's initial load or new messages
+                const shouldScroll = isInitialLoad || newMessages.length > 0;
+                const wasAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + 100;
+
+                // Render all messages
+                messagesContainer.innerHTML = '';
+                sortedMessages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    
+                    if (msg.type === 'system') {
+                        messageDiv.className = 'system-message';
+                        messageDiv.textContent = msg.text;
+                    } else {
+                        messageDiv.className = 'message';
+                        if (msg.userId === userId) {
+                            messageDiv.classList.add('own');
+                        }
+
+                        const time = new Date(msg.timestamp).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                        });
+
+                        let messageContent = '';
+                        
+                        // Add text if present
+                        if (msg.text) {
+                            messageContent += `<div class="message-text">${escapeHtml(msg.text)}</div>`;
+                        }
+
+                        // Add media if present
+                        if (msg.fileURL) {
+                            if (msg.fileType === 'image') {
+                                messageContent += `
+                                    <div class="message-media">
+                                        <img src="${msg.fileURL}" alt="${escapeHtml(msg.fileName || 'Image')}" loading="lazy">
+                                    </div>
+                                `;
+                            } else if (msg.fileType === 'audio') {
+                                messageContent += `
+                                    <div class="message-media">
+                                        <audio controls>
+                                            <source src="${msg.fileURL}" type="audio/mpeg">
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                    </div>
+                                `;
+                            }
+                        }
+
+                        messageDiv.innerHTML = `
+                            <div class="message-header">
+                                <span class="message-nickname">${escapeHtml(msg.nickname)}</span>
+                                <span class="message-time">${time}</span>
+                            </div>
+                            ${messageContent}
+                        `;
                     }
+
+                    messagesContainer.appendChild(messageDiv);
                 });
-            }, { onlyOnce: true });
 
-            // Also clean up old userJoins data (older than 1 hour)
-            const userJoinsRef = ref(database, 'chat/userJoins');
-            onValue(userJoinsRef, (snapshot) => {
-                const userJoins = snapshot.val();
-                if (!userJoins) return;
+                // Auto scroll only if user was at bottom or it's a new message
+                if (shouldScroll && (isInitialLoad || wasAtBottom)) {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
 
+                // Update tracking variables
+                previousMessageIds = currentMessageIds;
+                isInitialLoad = false;
+            });
+
+            // Utility function to escape HTML
+            function escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
+            }
+
+            // Send join message with cooldown
+            window.addEventListener('load', () => {
                 const currentTime = Date.now();
-                const oneHour = 60 * 60 * 1000;
-
-                Object.entries(userJoins).forEach(([uid, data]) => {
-                    const age = currentTime - data.timestamp;
-                    if (age > oneHour) {
-                        remove(ref(database, `chat/userJoins/${uid}`));
+                
+                const userJoinRef = ref(database, `chat/userJoins/${userId}`);
+                onValue(userJoinRef, (snapshot) => {
+                    const lastJoin = snapshot.val();
+                    const lastJoinTimestamp = lastJoin ? lastJoin.timestamp : 0;
+                    const timeSinceLastJoin = currentTime - lastJoinTimestamp;
+                    
+                    if (timeSinceLastJoin >= JOIN_COOLDOWN) {
+                        const joinMsgRef = push(ref(database, 'chat/messages'));
+                        set(joinMsgRef, {
+                            type: 'system',
+                            text: `${currentNickname} joined the chat`,
+                            timestamp: currentTime,
+                            userId: userId
+                        });
+                        
+                        set(userJoinRef, {
+                            timestamp: currentTime,
+                            nickname: currentNickname
+                        });
                     }
-                });
-            }, { onlyOnce: true });
-        }, 30000); // Check every 30 seconds
-        
-        } // End of initializeChat function
+                }, { onlyOnce: true });
+            });
+
+            // Auto-delete old messages
+            setInterval(() => {
+                onValue(messagesRef, (snapshot) => {
+                    const messages = snapshot.val();
+                    if (!messages) return;
+
+                    const currentTime = Date.now();
+                    const messageArray = Object.entries(messages)
+                        .map(([id, msg]) => ({ id, ...msg }));
+
+                    messageArray.forEach(msg => {
+                        const messageAge = currentTime - msg.timestamp;
+                        if (messageAge > MESSAGE_LIFETIME) {
+                            remove(ref(database, `chat/messages/${msg.id}`));
+                        }
+                    });
+                }, { onlyOnce: true });
+
+                const userJoinsRef = ref(database, 'chat/userJoins');
+                onValue(userJoinsRef, (snapshot) => {
+                    const userJoins = snapshot.val();
+                    if (!userJoins) return;
+
+                    const currentTime = Date.now();
+                    const oneHour = 60 * 60 * 1000;
+
+                    Object.entries(userJoins).forEach(([uid, data]) => {
+                        const age = currentTime - data.timestamp;
+                        if (age > oneHour) {
+                            remove(ref(database, `chat/userJoins/${uid}`));
+                        }
+                    });
+                }, { onlyOnce: true });
+            }, 30000);
+        }
 
         // Check for auto-login on page load
         checkAutoLogin();
