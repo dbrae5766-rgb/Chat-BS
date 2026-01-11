@@ -862,6 +862,20 @@
 
     <script type="module">
         // Firebase configuration
+        // IMPORTANT: For file uploads to work, you need to configure Firebase Storage rules.
+        // Go to Firebase Console > Storage > Rules and set:
+        // 
+        // rules_version = '2';
+        // service firebase.storage {
+        //   match /b/{bucket}/o {
+        //     match /{allPaths=**} {
+        //       allow read, write: if true;
+        //     }
+        //   }
+        // }
+        // 
+        // Note: The above rules allow anyone to read/write. For production, use proper authentication.
+        
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, set, push, onValue, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
@@ -1239,20 +1253,40 @@
             const uploadTask = uploadBytesResumable(fileRef, file);
 
             return new Promise((resolve, reject) => {
+                // Add timeout to prevent hanging
+                const timeout = setTimeout(() => {
+                    uploadProgress.classList.remove('active');
+                    progressFill.style.width = '0%';
+                    reject(new Error('Upload timeout - please check your Firebase Storage configuration'));
+                }, 30000); // 30 second timeout
+
                 uploadTask.on('state_changed',
                     (snapshot) => {
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                         progressFill.style.width = progress + '%';
+                        console.log('Upload progress:', progress + '%');
                     },
                     (error) => {
+                        clearTimeout(timeout);
                         uploadProgress.classList.remove('active');
+                        progressFill.style.width = '0%';
+                        console.error('Upload error:', error);
                         reject(error);
                     },
                     async () => {
-                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                        uploadProgress.classList.remove('active');
-                        progressFill.style.width = '0%';
-                        resolve(downloadURL);
+                        clearTimeout(timeout);
+                        try {
+                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                            uploadProgress.classList.remove('active');
+                            progressFill.style.width = '0%';
+                            console.log('Upload successful:', downloadURL);
+                            resolve(downloadURL);
+                        } catch (error) {
+                            uploadProgress.classList.remove('active');
+                            progressFill.style.width = '0%';
+                            console.error('Error getting download URL:', error);
+                            reject(error);
+                        }
                     }
                 );
             });
@@ -1344,7 +1378,19 @@
                         messageData.fileName = selectedFile.name;
                     } catch (error) {
                         console.error('Error uploading file:', error);
-                        alert('Failed to upload file. Please try again.');
+                        uploadProgress.classList.remove('active');
+                        progressFill.style.width = '0%';
+                        
+                        // Show specific error message
+                        let errorMsg = 'Failed to upload file. ';
+                        if (error.code === 'storage/unauthorized') {
+                            errorMsg += 'Storage permissions not configured. Please check Firebase Storage rules.';
+                        } else if (error.message && error.message.includes('timeout')) {
+                            errorMsg += 'Upload timed out. Please check your Firebase Storage configuration.';
+                        } else {
+                            errorMsg += 'Please try again or check console for details.';
+                        }
+                        alert(errorMsg);
                         return;
                     }
                 }
@@ -1357,6 +1403,8 @@
                 selectedFile = null;
                 fileType = null;
                 filePreview.classList.remove('active');
+                uploadProgress.classList.remove('active');
+                progressFill.style.width = '0%';
                 imageInput.value = '';
                 audioInput.value = '';
                 messageInput.focus();
