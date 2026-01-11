@@ -941,10 +941,11 @@
             try {
                 const response = await fetch('https://api.ipify.org?format=json');
                 const data = await response.json();
+                console.log('User IP fetched:', data.ip);
                 return data.ip;
             } catch (error) {
-                console.log('Could not fetch IP:', error);
-                return null;
+                console.log('Could not fetch IP (non-critical):', error);
+                return null; // Return null if IP fetch fails - this is OK
             }
         }
 
@@ -958,7 +959,9 @@
                     if (snapshot.exists()) {
                         currentUser = savedUsername;
                         userId = savedUserId;
-                        userIP = snapshot.val().ip; // Get user's IP
+                        const userData = snapshot.val();
+                        userIP = userData.ip || null; // Get user's IP, or null if not available
+                        console.log('Auto-login successful, IP:', userIP);
                         showChat();
                     } else {
                         localStorage.removeItem('chatUsername');
@@ -1098,7 +1101,8 @@
             
             currentUser = foundUser.username;
             userId = foundUserId;
-            userIP = foundUser.ip; // Get IP from user data
+            userIP = foundUser.ip || null; // Get IP from user data, or null if not available
+            console.log('Login successful, IP:', userIP);
             
             showChat();
         });
@@ -1340,10 +1344,14 @@
             const MESSAGE_COOLDOWN = 1000;
 
             async function sendMessage() {
+                console.log('Send message called');
                 const messageText = messageInput.value.trim();
                 
                 // Check if there's either text or a file
-                if (!messageText && !selectedFile) return;
+                if (!messageText && !selectedFile) {
+                    console.log('No message text or file');
+                    return;
+                }
 
                 const currentTime = Date.now();
                 const timeSinceLastMessage = currentTime - lastMessageTime;
@@ -1356,17 +1364,23 @@
                     return;
                 }
 
+                console.log('Creating message data...');
                 const messageData = {
                     type: 'message',
                     nickname: currentNickname,
                     userId: userId,
-                    userIP: userIP,
                     timestamp: currentTime
                 };
+                
+                // Add IP if available
+                if (userIP) {
+                    messageData.userIP = userIP;
+                }
 
                 // Add text if present
                 if (messageText) {
                     messageData.text = messageText;
+                    console.log('Added text to message');
                 }
 
                 // Upload file if present
@@ -1384,19 +1398,36 @@
                         // Show specific error message
                         let errorMsg = 'Failed to upload file. ';
                         if (error.code === 'storage/unauthorized') {
-                            errorMsg += 'Storage permissions not configured. Please check Firebase Storage rules.';
+                            errorMsg += 'Storage permissions not configured.';
                         } else if (error.message && error.message.includes('timeout')) {
-                            errorMsg += 'Upload timed out. Please check your Firebase Storage configuration.';
+                            errorMsg += 'Upload timed out.';
                         } else {
-                            errorMsg += 'Please try again or check console for details.';
+                            errorMsg += 'Error: ' + (error.message || 'Unknown error');
                         }
-                        alert(errorMsg);
-                        return;
+                        
+                        // Ask if user wants to send text without the file
+                        if (messageText) {
+                            const sendAnyway = confirm(errorMsg + '\n\nDo you want to send the text message without the file?');
+                            if (!sendAnyway) {
+                                return;
+                            }
+                            // Clear file selection but continue to send text
+                            selectedFile = null;
+                            fileType = null;
+                            filePreview.classList.remove('active');
+                            imageInput.value = '';
+                            audioInput.value = '';
+                        } else {
+                            alert(errorMsg);
+                            return;
+                        }
                     }
                 }
 
                 const messageRef = push(ref(database, 'chat/messages'));
+                console.log('Sending message to database...');
                 await set(messageRef, messageData);
+                console.log('Message sent successfully!');
 
                 lastMessageTime = currentTime;
                 messageInput.value = '';
