@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BS Chat</title>
+    <title>Remote PC Control</title>
     <style>
         * {
             margin: 0;
@@ -12,1671 +12,686 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .chat-container {
-            width: 100%;
-            max-width: 800px;
-            height: 90vh;
-            max-height: 700px;
-            background: #1a1a1a;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-            display: flex;
-            flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #2b2d31;
             overflow: hidden;
-            border: 1px solid #2a2a2a;
+            height: 100vh;
         }
 
-        .chat-header {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: white;
-            padding: 20px 25px;
+        /* Connection Screen */
+        .connection-screen {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #00ff88;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
-        .chat-header h1 {
-            font-size: 24px;
+        .connection-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 90%;
+        }
+
+        .connection-box h2 {
+            margin-bottom: 25px;
+            color: #333;
+            text-align: center;
+        }
+
+        .connection-box label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
             font-weight: 600;
+            font-size: 14px;
         }
 
-        .online-status {
+        .connection-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-family: inherit;
+        }
+
+        .connection-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .connection-box button {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .connection-box button:hover {
+            background: #5568d3;
+        }
+
+        .connection-box button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Remote Desktop View */
+        .remote-desktop {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            background: #1e1f22;
+            flex-direction: column;
+        }
+
+        .remote-desktop.active {
+            display: flex;
+        }
+
+        /* Top Toolbar */
+        .toolbar {
+            background: #313338;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #1e1f22;
+            flex-shrink: 0;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .connection-indicator {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 14px;
-            opacity: 0.9;
+            color: #b9bbbe;
+            font-size: 13px;
         }
 
-        .status-dot {
+        .connection-dot {
             width: 10px;
             height: 10px;
-            background: #00ff88;
             border-radius: 50%;
+            background: #3ba55c;
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.6; }
         }
 
-        .nickname-bar {
-            background: #0f0f0f;
-            padding: 15px 25px;
-            border-bottom: 1px solid #2a2a2a;
+        .fps-selector {
+            color: #b9bbbe;
+            font-size: 13px;
+        }
+
+        .fps-selector select {
+            background: #2b2d31;
+            color: #b9bbbe;
+            border: 1px solid #1e1f22;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+
+        .toolbar-right {
             display: flex;
-            align-items: center;
             gap: 10px;
         }
 
-        .nickname-bar label {
-            font-size: 14px;
-            color: #888;
-            font-weight: 500;
-        }
-
-        .nickname-bar input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 2px solid #2a2a2a;
-            background: #1a1a1a;
-            color: #fff;
-            border-radius: 10px;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .nickname-bar input:focus {
-            outline: none;
-            border-color: #00ff88;
-            background: #1f1f1f;
-        }
-
-        .nickname-bar button {
-            padding: 10px 20px;
-            background: #00ff88;
-            color: #0f0f0f;
+        .toolbar-btn {
+            background: #2b2d31;
+            color: #b9bbbe;
             border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .nickname-bar button:hover {
-            background: #00dd77;
-            transform: translateY(-1px);
+        .toolbar-btn:hover {
+            background: #404249;
         }
 
-        .messages-container {
+        .toolbar-btn.disconnect {
+            background: #da373c;
+            color: white;
+        }
+
+        .toolbar-btn.disconnect:hover {
+            background: #c12c31;
+        }
+
+        /* Screen Container */
+        .screen-wrapper {
             flex: 1;
-            overflow-y: auto;
-            padding: 20px 25px;
-            background: #0f0f0f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #1e1f22;
+            position: relative;
         }
 
-        .messages-container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .messages-container::-webkit-scrollbar-track {
-            background: #1a1a1a;
-        }
-
-        .messages-container::-webkit-scrollbar-thumb {
-            background: #2a2a2a;
+        #screen {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: default; /* Show normal cursor */
             border-radius: 4px;
         }
 
-        .messages-container::-webkit-scrollbar-thumb:hover {
-            background: #3a3a3a;
-        }
-
-        .message {
-            margin-bottom: 15px;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 5px;
-        }
-
-        .message-nickname {
-            font-weight: 600;
-            font-size: 14px;
-            color: #00ff88;
-        }
-
-        .message-time {
-            font-size: 12px;
-            color: #666;
-        }
-
-        .message-text {
-            background: #1a1a1a;
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-size: 15px;
-            color: #e0e0e0;
-            line-height: 1.5;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-            word-wrap: break-word;
-            border: 1px solid #2a2a2a;
-        }
-
-        .message-media {
-            background: #1a1a1a;
-            padding: 8px;
-            border-radius: 12px;
-            border: 1px solid #2a2a2a;
-            margin-top: 5px;
-        }
-
-        .message-media img {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            display: block;
-        }
-
-        .message-media audio {
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .message.own .message-nickname {
-            color: #00ddff;
-        }
-
-        .message.own .message-text {
-            background: linear-gradient(135deg, #00ff88 0%, #00ddff 100%);
-            color: #0f0f0f;
-            margin-left: auto;
-            max-width: 70%;
-            border: none;
-            font-weight: 500;
-        }
-
-        .message.own .message-media {
-            margin-left: auto;
-            max-width: 70%;
-        }
-
-        .message.own .message-header {
-            justify-content: flex-end;
-        }
-
-        /* Special styling for VIP user */
-        .message.vip .message-text {
-            border: 3px solid #ff8800;
-            box-shadow: 0 0 15px rgba(255, 136, 0, 0.3);
-        }
-
-        .message.vip .message-media {
-            border: 3px solid #ff8800;
-            box-shadow: 0 0 15px rgba(255, 136, 0, 0.3);
-        }
-
-        .message.vip .message-nickname {
-            color: #ff8800;
-        }
-
-        .message.vip.own .message-text {
-            border: 3px solid #ff8800;
-            box-shadow: 0 0 15px rgba(255, 136, 0, 0.5);
-        }
-
-        .message.vip.own .message-media {
-            border: 3px solid #ff8800;
-            box-shadow: 0 0 15px rgba(255, 136, 0, 0.5);
-        }
-
-        .system-message {
-            text-align: center;
-            color: #666;
-            font-size: 13px;
-            margin: 15px 0;
-            font-style: italic;
-        }
-
-        .input-container {
-            padding: 20px 25px;
-            background: #1a1a1a;
-            border-top: 1px solid #2a2a2a;
-        }
-
-        .input-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-
-        .input-container input[type="text"] {
-            flex: 1;
-            padding: 14px 18px;
-            border: 2px solid #2a2a2a;
-            background: #0f0f0f;
-            color: #fff;
-            border-radius: 12px;
-            font-size: 15px;
-            transition: all 0.2s;
-        }
-
-        .input-container input[type="text"]:focus {
-            outline: none;
-            border-color: #00ff88;
-        }
-
-        .send-button {
-            padding: 14px 28px;
-            background: linear-gradient(135deg, #00ff88 0%, #00ddff 100%);
-            color: #0f0f0f;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .send-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
-        }
-
-        .send-button:active {
-            transform: translateY(0);
-        }
-
-        .send-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .attachment-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .attachment-btn {
-            padding: 10px 16px;
-            background: #2a2a2a;
-            color: #888;
-            border: none;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .attachment-btn:hover {
-            background: #3a3a3a;
-            color: #00ff88;
-        }
-
-        .attachment-btn.active {
-            background: #00ff88;
-            color: #0f0f0f;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .file-preview {
-            margin-top: 10px;
-            padding: 12px;
-            background: #0f0f0f;
-            border: 2px solid #2a2a2a;
-            border-radius: 10px;
-            display: none;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .file-preview.active {
-            display: flex;
-        }
-
-        .file-preview-content {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .file-preview img {
-            max-width: 60px;
-            max-height: 60px;
-            border-radius: 6px;
-        }
-
-        .file-preview-info {
-            color: #888;
-            font-size: 13px;
-        }
-
-        .file-preview-name {
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .remove-file-btn {
-            padding: 8px 16px;
-            background: #ff5050;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .remove-file-btn:hover {
-            background: #ff3030;
-        }
-
-        .upload-progress {
-            margin-top: 10px;
-            padding: 12px;
-            background: #0f0f0f;
-            border: 2px solid #2a2a2a;
-            border-radius: 10px;
-            display: none;
-        }
-
-        .upload-progress.active {
-            display: block;
-        }
-
-        .progress-bar {
-            height: 6px;
-            background: #2a2a2a;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #00ff88 0%, #00ddff 100%);
-            transition: width 0.3s;
-        }
-
-        .progress-text {
-            color: #888;
-            font-size: 13px;
-        }
-
-        .empty-state {
-            text-align: center;
-            color: #666;
-            padding: 40px 20px;
-            font-size: 15px;
-        }
-
-        .empty-state svg {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 15px;
-            opacity: 0.2;
-        }
-
-        /* Login/Signup Page Styles */
-        .auth-container {
-            position: fixed;
+        /* Loading Overlay */
+        .loading-overlay {
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
-            display: flex;
-            justify-content: center;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 31, 34, 0.8);
+            display: none;
             align-items: center;
+            justify-content: center;
+            color: #b9bbbe;
+            font-size: 16px;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #404249;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Notification Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #313338;
+            color: #dcddde;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
             z-index: 1000;
         }
 
-        .auth-box {
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            border-radius: 20px;
-            padding: 40px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-        }
-
-        .auth-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .auth-header h1 {
-            color: #fff;
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .auth-header p {
-            color: #888;
-            font-size: 14px;
-        }
-
-        .auth-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        .auth-tab {
-            flex: 1;
-            padding: 12px;
-            background: #0f0f0f;
-            border: 2px solid #2a2a2a;
-            color: #888;
-            cursor: pointer;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .auth-tab.active {
-            background: linear-gradient(135deg, #00ff88 0%, #00ddff 100%);
-            color: #0f0f0f;
-            border-color: transparent;
-        }
-
-        .auth-form {
-            display: none;
-        }
-
-        .auth-form.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            color: #888;
-            font-size: 14px;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 14px 18px;
-            background: #0f0f0f;
-            border: 2px solid #2a2a2a;
-            color: #fff;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: all 0.2s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #00ff88;
-        }
-
-        .auth-button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #00ff88 0%, #00ddff 100%);
-            color: #0f0f0f;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .auth-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
-        }
-
-        .auth-error {
-            background: rgba(255, 50, 50, 0.1);
-            border: 1px solid rgba(255, 50, 50, 0.3);
-            color: #ff5050;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            display: none;
-        }
-
-        /* Settings Modal */
-        .settings-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-        }
-
-        .settings-overlay.active {
-            display: flex;
-        }
-
-        .settings-modal {
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            border-radius: 20px;
-            padding: 30px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .settings-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #2a2a2a;
-        }
-
-        .settings-header h2 {
-            color: #fff;
-            font-size: 24px;
-        }
-
-        .close-settings {
-            background: none;
-            border: none;
-            color: #888;
-            font-size: 28px;
-            cursor: pointer;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-settings:hover {
-            color: #fff;
-        }
-
-        .setting-item {
-            margin-bottom: 25px;
-        }
-
-        .setting-item h3 {
-            color: #fff;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        .setting-item p {
-            color: #888;
-            font-size: 13px;
-            margin-bottom: 10px;
-        }
-
-        .logout-btn {
-            width: 100%;
-            padding: 14px;
-            background: #ff5050;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .logout-btn:hover {
-            background: #ff3030;
-            transform: translateY(-2px);
-        }
-
-        .settings-btn {
-            background: none;
-            border: none;
-            color: #888;
-            cursor: pointer;
-            font-size: 24px;
-            padding: 0;
-            transition: all 0.2s;
-        }
-
-        .settings-btn:hover {
-            color: #00ff88;
-        }
-
-        @media (max-width: 600px) {
-            .chat-container {
-                height: 100vh;
-                max-height: 100vh;
-                border-radius: 0;
-            }
-
-            body {
-                padding: 0;
-            }
-
-            .chat-header h1 {
-                font-size: 20px;
-            }
-
-            .message.own .message-text,
-            .message.own .message-media {
-                max-width: 85%;
-            }
+        .toast.show {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
-    <!-- Login/Signup Page -->
-    <div class="auth-container" id="authContainer">
-        <div class="auth-box">
-            <div class="auth-header">
-                <h1>💬 BS Chat</h1>
-                <p>Join the conversation</p>
-            </div>
-
-            <div class="auth-tabs">
-                <button class="auth-tab active" data-tab="login">Login</button>
-                <button class="auth-tab" data-tab="signup">Sign Up</button>
-            </div>
-
-            <div class="auth-error" id="authError"></div>
-
-            <!-- Login Form -->
-            <form class="auth-form active" id="loginForm">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="loginUsername" placeholder="Enter username" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="loginPassword" placeholder="Enter password" required>
-                </div>
-                <button type="submit" class="auth-button">Login</button>
-            </form>
-
-            <!-- Signup Form -->
-            <form class="auth-form" id="signupForm">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="signupUsername" placeholder="Choose a username" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="signupPassword" placeholder="Choose a password" required>
-                </div>
-                <div class="form-group">
-                    <label>Confirm Password</label>
-                    <input type="password" id="signupConfirmPassword" placeholder="Confirm password" required>
-                </div>
-                <button type="submit" class="auth-button">Sign Up</button>
-            </form>
+    <!-- Connection Screen -->
+    <div class="connection-screen" id="connectionScreen">
+        <div class="connection-box">
+            <h2>🔗 Connect to Your PC</h2>
+            <div id="connectionStatus"></div>
+            
+            <label>Password</label>
+            <input type="password" id="password" placeholder="Enter password" />
+            
+            <button onclick="connect()" id="connectBtn">Connect</button>
         </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div class="settings-overlay" id="settingsOverlay">
-        <div class="settings-modal">
-            <div class="settings-header">
-                <h2>⚙️ Settings</h2>
-                <button class="close-settings" id="closeSettings">×</button>
-            </div>
-
-            <div class="setting-item">
-                <h3>Account</h3>
-                <p>Logged in as: <strong id="currentUsername"></strong></p>
-            </div>
-
-            <div class="setting-item">
-                <h3>Change Nickname</h3>
-                <p>Update your display name in the chat</p>
-                <div class="form-group">
-                    <input type="text" id="settingsNickname" placeholder="Enter new nickname">
+    <!-- Remote Desktop View -->
+    <div class="remote-desktop" id="remoteDesktop">
+        <!-- Top Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="connection-indicator">
+                    <div class="connection-dot"></div>
+                    <span>Connected</span>
                 </div>
-                <button class="auth-button" id="updateNicknameBtn">Update Nickname</button>
+                <div class="fps-selector">
+                    FPS:
+                    <select id="refreshRate" onchange="updateRefreshRate()">
+                        <option value="33" selected>30 FPS (Ultra Smooth)</option>
+                        <option value="50">20 FPS</option>
+                        <option value="67">15 FPS</option>
+                        <option value="100">10 FPS</option>
+                        <option value="200">5 FPS</option>
+                        <option value="500">2 FPS</option>
+                        <option value="0">Manual</option>
+                    </select>
+                </div>
+                <div class="fps-selector">
+                    Quality:
+                    <select id="qualityMode" onchange="updateQualityMode()">
+                        <option value="speed" selected>Speed (Less Lag)</option>
+                        <option value="balanced">Balanced</option>
+                        <option value="quality">Quality (More Lag)</option>
+                    </select>
+                </div>
             </div>
+            <div class="toolbar-right">
+                <button class="toolbar-btn" onclick="refreshScreen()">🔄 Refresh</button>
+                <button class="toolbar-btn disconnect" onclick="disconnect()">Disconnect</button>
+            </div>
+        </div>
 
-            <div class="setting-item">
-                <button class="logout-btn" id="logoutBtn">Logout</button>
+        <!-- Screen Display -->
+        <div class="screen-wrapper" id="screenWrapper">
+            <img id="screen" src="" alt="Connecting..." tabindex="0" />
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+                <span>Loading screen...</span>
             </div>
         </div>
     </div>
 
-    <div class="chat-container" id="chatContainer" style="display: none;">
-        <div class="chat-header">
-            <h1>💬 BS Chat</h1>
-            <div class="online-status">
-                <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
-                <div class="status-dot"></div>
-                <span>Connected</span>
-            </div>
-        </div>
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
 
-        <div class="nickname-bar">
-            <label>Nickname:</label>
-            <input type="text" id="nicknameInput" placeholder="Enter your nickname..." maxlength="20">
-            <button id="setNicknameBtn">Set</button>
-        </div>
+    <script>
+        // CLOUDFLARE TUNNEL URL - Update this if cloudflared restarts
+        const WEBSOCKET_URL = 'wss://comm-tutorials-corn-combining.trycloudflare.com';
 
-        <div class="messages-container" id="messagesContainer">
-            <div class="empty-state">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-                <div>No messages yet. Start the conversation!</div>
-            </div>
-        </div>
+        let ws = null;
+        let lastX = 0;
+        let lastY = 0;
+        let refreshInterval = null;
+        let isConnected = false;
+        let isDragging = false;
+        let pingInterval = null;
+        let reconnectAttempts = 0;
+        let maxReconnectAttempts = 5;
+        let savedPassword = '';
+        let qualityMode = 'speed';
+        let pendingMouseMove = null;
+        const PING_INTERVAL = 10000;
 
-        <div class="input-container">
-            <div class="file-preview" id="filePreview">
-                <div class="file-preview-content" id="filePreviewContent">
-                    <div class="file-preview-info">
-                        <div class="file-preview-name" id="fileName">No file selected</div>
-                    </div>
-                </div>
-                <button class="remove-file-btn" id="removeFileBtn">Remove</button>
-            </div>
-
-            <div class="upload-progress" id="uploadProgress">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <div class="progress-text">Uploading... (10s timeout)</div>
-                    <button class="remove-file-btn" id="cancelUploadBtn" style="padding: 6px 12px; font-size: 11px;">Cancel</button>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <div class="attachment-buttons">
-                <button class="attachment-btn" id="imageBtn">
-                    📷 Image
-                </button>
-                <button class="attachment-btn" id="audioBtn">
-                    🎵 Audio
-                </button>
-            </div>
-
-            <input type="file" id="imageInput" class="file-input" accept="image/*">
-            <input type="file" id="audioInput" class="file-input" accept="audio/*">
-
-            <div class="input-row">
-                <input type="text" id="messageInput" placeholder="Type a message..." maxlength="500">
-                <button class="send-button" id="sendBtn">
-                    <span>Send</span>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
-        // Firebase configuration
-        // IMPORTANT: For file uploads to work, you need to configure Firebase Storage rules.
-        // Go to Firebase Console > Storage > Rules and set:
-        // 
-        // rules_version = '2';
-        // service firebase.storage {
-        //   match /b/{bucket}/o {
-        //     match /{allPaths=**} {
-        //       allow read, write: if true;
-        //     }
-        //   }
-        // }
-        // 
-        // Note: The above rules allow anyone to read/write. For production, use proper authentication.
-        
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, push, onValue, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-        import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBxOthers_will_need_this",
-            authDomain: "bs-drawing.firebaseapp.com",
-            databaseURL: "https://bs-drawing-default-rtdb.firebaseio.com",
-            projectId: "bs-drawing",
-            storageBucket: "bs-drawing.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const storage = getStorage(app);
-
-        // Log Firebase Storage setup instructions
-        console.log('%c📦 FIREBASE STORAGE SETUP REQUIRED FOR FILE UPLOADS', 'color: #ff8800; font-size: 16px; font-weight: bold;');
-        console.log('%cIf file uploads are stuck or timing out, follow these steps:', 'color: #00ff88; font-size: 14px;');
-        console.log('%c1. Go to https://console.firebase.google.com', 'color: white; font-size: 12px;');
-        console.log('%c2. Select your project: bs-drawing', 'color: white; font-size: 12px;');
-        console.log('%c3. Click "Storage" in the left sidebar', 'color: white; font-size: 12px;');
-        console.log('%c4. Click "Get Started" if Storage is not enabled', 'color: white; font-size: 12px;');
-        console.log('%c5. Go to the "Rules" tab', 'color: white; font-size: 12px;');
-        console.log('%c6. Replace the rules with this:', 'color: white; font-size: 12px;');
-        console.log(`%c
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /{allPaths=**} {
-      allow read, write: if true;
-    }
-  }
-}`, 'color: #00ddff; font-size: 12px; background: #1a1a1a; padding: 10px;');
-        console.log('%c7. Click "Publish" to save the rules', 'color: white; font-size: 12px;');
-        console.log('%c⚠️ Note: These rules allow anyone to upload. For production, add proper authentication.', 'color: #ff5050; font-size: 12px;');
-        console.log(' ');
-
-        // Auth Elements
-        const authContainer = document.getElementById('authContainer');
-        const chatContainer = document.getElementById('chatContainer');
-        const authError = document.getElementById('authError');
-        const loginForm = document.getElementById('loginForm');
-        const signupForm = document.getElementById('signupForm');
-        const settingsOverlay = document.getElementById('settingsOverlay');
-        const settingsBtn = document.getElementById('settingsBtn');
-        const closeSettings = document.getElementById('closeSettings');
-        const logoutBtn = document.getElementById('logoutBtn');
-
-        // File upload elements
-        const imageBtn = document.getElementById('imageBtn');
-        const audioBtn = document.getElementById('audioBtn');
-        const imageInput = document.getElementById('imageInput');
-        const audioInput = document.getElementById('audioInput');
-        const filePreview = document.getElementById('filePreview');
-        const filePreviewContent = document.getElementById('filePreviewContent');
-        const fileName = document.getElementById('fileName');
-        const removeFileBtn = document.getElementById('removeFileBtn');
-        const uploadProgress = document.getElementById('uploadProgress');
-        const progressFill = document.getElementById('progressFill');
-
-        // Current user
-        let currentUser = null;
-        let userId = null;
-        let currentNickname = null;
-        let selectedFile = null;
-        let fileType = null;
-        let userIP = null;
-        let currentUploadTask = null; // Track current upload for cancellation
-        const VIP_IP = '69.170.112.226'; // Special IP address with orange border
-
-        // Hash password
-        async function hashPassword(password) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(password);
-            const hash = await crypto.subtle.digest('SHA-256', data);
-            return Array.from(new Uint8Array(hash))
-                .map(b => b.toString(16).padStart(2, '0'))
-                .join('');
+        function updateQualityMode() {
+            qualityMode = document.getElementById('qualityMode').value;
+            // Quality is handled server-side, just stored here for future use
+            showToast(`Quality mode: ${qualityMode}`);
         }
 
-        // Get user's IP address
-        async function getUserIP() {
+        function connect() {
+            const password = document.getElementById('password').value;
+
+            if (!password) {
+                showConnectionStatus('Please enter password', 'error');
+                return;
+            }
+
+            savedPassword = password; // Save for reconnection
+            attemptConnection();
+        }
+
+        function attemptConnection() {
+            showConnectionStatus('Connecting...', 'info');
+            document.getElementById('connectBtn').disabled = true;
+
             try {
-                const response = await fetch('https://api.ipify.org?format=json');
-                const data = await response.json();
-                console.log('User IP fetched:', data.ip);
-                return data.ip;
+                ws = new WebSocket(WEBSOCKET_URL);
+
+                ws.onopen = () => {
+                    console.log('WebSocket connected');
+                    reconnectAttempts = 0; // Reset on successful connection
+                    ws.send(JSON.stringify({
+                        type: 'auth',
+                        password: savedPassword
+                    }));
+                    
+                    // Start keep-alive ping
+                    if (pingInterval) clearInterval(pingInterval);
+                    pingInterval = setInterval(() => {
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send(JSON.stringify({ type: 'ping' }));
+                        }
+                    }, PING_INTERVAL);
+                };
+
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    handleMessage(data);
+                };
+
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    showConnectionStatus('Connection error - check that server is running', 'error');
+                    document.getElementById('connectBtn').disabled = false;
+                };
+
+                ws.onclose = () => {
+                    console.log('WebSocket disconnected');
+                    isConnected = false;
+                    
+                    if (pingInterval) {
+                        clearInterval(pingInterval);
+                    }
+                    if (refreshInterval) {
+                        clearInterval(refreshInterval);
+                    }
+
+                    // Attempt to reconnect if was previously connected
+                    if (reconnectAttempts < maxReconnectAttempts && savedPassword) {
+                        reconnectAttempts++;
+                        showToast(`Reconnecting... (${reconnectAttempts}/${maxReconnectAttempts})`);
+                        setTimeout(attemptConnection, 2000 * reconnectAttempts); // Exponential backoff
+                    } else {
+                        showToast('Disconnected from PC');
+                        // Return to connection screen
+                        setTimeout(() => {
+                            document.getElementById('connectionScreen').style.display = 'flex';
+                            document.getElementById('remoteDesktop').classList.remove('active');
+                            document.getElementById('connectBtn').disabled = false;
+                            reconnectAttempts = 0;
+                        }, 1000);
+                    }
+                };
+
             } catch (error) {
-                console.log('Could not fetch IP (non-critical):', error);
-                return null; // Return null if IP fetch fails - this is OK
+                showConnectionStatus('Failed to connect: ' + error.message, 'error');
+                document.getElementById('connectBtn').disabled = false;
             }
         }
 
-        // Check if user is logged in
-        function checkAutoLogin() {
-            const savedUsername = localStorage.getItem('chatUsername');
-            const savedUserId = localStorage.getItem('chatUserId');
-            
-            if (savedUsername && savedUserId) {
-                get(ref(database, `users/${savedUserId}`)).then(snapshot => {
-                    if (snapshot.exists()) {
-                        currentUser = savedUsername;
-                        userId = savedUserId;
-                        const userData = snapshot.val();
-                        userIP = userData.ip || null; // Get user's IP, or null if not available
-                        console.log('Auto-login successful, IP:', userIP);
-                        showChat();
-                    } else {
-                        localStorage.removeItem('chatUsername');
-                        localStorage.removeItem('chatUserId');
-                        showAuth();
-                    }
-                }).catch(() => {
-                    showAuth();
-                });
-            } else {
-                showAuth();
+        function disconnect() {
+            reconnectAttempts = maxReconnectAttempts; // Prevent auto-reconnect
+            savedPassword = ''; // Clear saved password
+            if (pingInterval) {
+                clearInterval(pingInterval);
+            }
+            if (ws) {
+                ws.close();
             }
         }
 
-        // Show auth page
-        function showAuth() {
-            authContainer.style.display = 'flex';
-            chatContainer.style.display = 'none';
-        }
-
-        // Show chat
-        function showChat() {
-            authContainer.style.display = 'none';
-            chatContainer.style.display = 'flex';
-            initializeChat();
-        }
-
-        // Show error
-        function showError(message) {
-            authError.textContent = message;
-            authError.style.display = 'block';
-            setTimeout(() => {
-                authError.style.display = 'none';
-            }, 5000);
-        }
-
-        // Auth tabs
-        document.querySelectorAll('.auth-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.tab + 'Form').classList.add('active');
-            });
-        });
-
-        // Signup
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('signupUsername').value.trim();
-            const password = document.getElementById('signupPassword').value;
-            const confirmPassword = document.getElementById('signupConfirmPassword').value;
-
-            if (username.length < 3) {
-                showError('Username must be at least 3 characters');
-                return;
-            }
-
-            if (password.length < 6) {
-                showError('Password must be at least 6 characters');
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                showError('Passwords do not match');
-                return;
-            }
-
-            const usersRef = ref(database, 'users');
-            const snapshot = await get(usersRef);
-            const users = snapshot.val() || {};
-            
-            const userExists = Object.values(users).some(u => u.username.toLowerCase() === username.toLowerCase());
-            
-            if (userExists) {
-                showError('Username already taken');
-                return;
-            }
-
-            const newUserId = 'user_' + Math.random().toString(36).substr(2, 9) + Date.now();
-            const hashedPassword = await hashPassword(password);
-            
-            // Get user IP
-            userIP = await getUserIP();
-            
-            await set(ref(database, `users/${newUserId}`), {
-                username: username,
-                password: hashedPassword,
-                createdAt: Date.now(),
-                ip: userIP
-            });
-
-            localStorage.setItem('chatUsername', username);
-            localStorage.setItem('chatUserId', newUserId);
-            
-            currentUser = username;
-            userId = newUserId;
-            
-            showChat();
-        });
-
-        // Login
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-
-            const usersRef = ref(database, 'users');
-            const snapshot = await get(usersRef);
-            const users = snapshot.val() || {};
-            
-            let foundUser = null;
-            let foundUserId = null;
-
-            for (const [uid, user] of Object.entries(users)) {
-                if (user.username.toLowerCase() === username.toLowerCase()) {
-                    foundUser = user;
-                    foundUserId = uid;
-                    break;
+        function handleMessage(data) {
+            if (data.type === 'auth_success') {
+                isConnected = true;
+                
+                document.getElementById('connectionScreen').style.display = 'none';
+                document.getElementById('remoteDesktop').classList.add('active');
+                showToast('Connected successfully!');
+                document.getElementById('loadingOverlay').classList.add('active');
+                
+                // Focus the screen for keyboard capture
+                document.getElementById('screen').focus();
+                
+                refreshScreen();
+                updateRefreshRate();
+            } else if (data.type === 'screenshot') {
+                // Just display the screenshot - cursor is already in the image
+                const screenImg = document.getElementById('screen');
+                screenImg.src = data.image;
+                document.getElementById('loadingOverlay').classList.remove('active');
+            } else if (data.type === 'success') {
+                // Success - no cursor sync needed since cursor is in screenshot
+            } else if (data.type === 'error') {
+                showToast('Error: ' + data.message);
+                if (data.message.includes('Authentication')) {
+                    disconnect();
                 }
             }
+        }
 
-            if (!foundUser) {
-                showError('Username not found');
-                return;
+        function sendMessage(data) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(data));
             }
+        }
 
-            const hashedPassword = await hashPassword(password);
+        function refreshScreen() {
+            sendMessage({ type: 'screenshot' });
+        }
+
+        function updateRefreshRate() {
+            if (refreshInterval) clearInterval(refreshInterval);
             
-            if (foundUser.password !== hashedPassword) {
-                showError('Incorrect password');
-                return;
+            const rate = parseInt(document.getElementById('refreshRate').value);
+            if (rate > 0) {
+                refreshInterval = setInterval(refreshScreen, rate);
             }
+        }
 
-            localStorage.setItem('chatUsername', foundUser.username);
-            localStorage.setItem('chatUserId', foundUserId);
+        function sendMouse(action, x, y, amount = 0) {
+            sendMessage({
+                type: 'mouse',
+                action: action,
+                x: x,
+                y: y,
+                amount: amount
+            });
+        }
+
+        function sendKey(key, isDown) {
+            sendMessage({
+                type: 'keyboard',
+                key: key,
+                keyDown: isDown
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function showConnectionStatus(message, type) {
+            const status = document.getElementById('connectionStatus');
+            status.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Handle screen interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            const screen = document.getElementById('screen');
+            const screenWrapper = document.getElementById('screenWrapper');
             
-            currentUser = foundUser.username;
-            userId = foundUserId;
-            userIP = foundUser.ip || null; // Get IP from user data, or null if not available
-            console.log('Login successful, IP:', userIP);
-            
-            showChat();
-        });
-
-        // Settings
-        settingsBtn.addEventListener('click', () => {
-            document.getElementById('currentUsername').textContent = currentUser;
-            document.getElementById('settingsNickname').value = currentNickname;
-            settingsOverlay.classList.add('active');
-        });
-
-        closeSettings.addEventListener('click', () => {
-            settingsOverlay.classList.remove('active');
-        });
-
-        settingsOverlay.addEventListener('click', (e) => {
-            if (e.target === settingsOverlay) {
-                settingsOverlay.classList.remove('active');
-            }
-        });
-
-        // Update nickname from settings
-        document.getElementById('updateNicknameBtn').addEventListener('click', () => {
-            const newNickname = document.getElementById('settingsNickname').value.trim();
-            if (newNickname && newNickname.length > 0) {
-                const oldNickname = currentNickname;
-                currentNickname = newNickname;
-                localStorage.setItem('chatNickname', currentNickname);
-                document.getElementById('nicknameInput').value = currentNickname;
+            // Helper function to get scaled coordinates
+            function getScaledCoords(e) {
+                const rect = screen.getBoundingClientRect();
                 
-                const systemMsgRef = push(ref(database, 'chat/messages'));
-                set(systemMsgRef, {
-                    type: 'system',
-                    text: `${oldNickname} changed their name to ${currentNickname}`,
-                    timestamp: Date.now()
-                });
-
-                settingsOverlay.classList.remove('active');
-            }
-        });
-
-        // Logout
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('chatUsername');
-            localStorage.removeItem('chatUserId');
-            currentUser = null;
-            userId = null;
-            settingsOverlay.classList.remove('active');
-            showAuth();
-        });
-
-        // File upload handlers
-        imageBtn.addEventListener('click', () => {
-            imageInput.click();
-        });
-
-        audioBtn.addEventListener('click', () => {
-            audioInput.click();
-        });
-
-        imageInput.addEventListener('change', (e) => {
-            handleFileSelect(e.target.files[0], 'image');
-        });
-
-        audioInput.addEventListener('change', (e) => {
-            handleFileSelect(e.target.files[0], 'audio');
-        });
-
-        // Paste event handler for images and audio
-        document.addEventListener('paste', (e) => {
-            // Only handle paste when chat is visible
-            if (chatContainer.style.display === 'none') return;
-            
-            const items = e.clipboardData.items;
-            
-            for (let i = 0; i < items.length; i++) {
-                const item = items[i];
+                // Get exact position relative to screen image
+                const relativeX = e.clientX - rect.left;
+                const relativeY = e.clientY - rect.top;
                 
-                // Handle image paste
-                if (item.type.indexOf('image') !== -1) {
-                    e.preventDefault();
-                    const file = item.getAsFile();
-                    handleFileSelect(file, 'image');
-                    break;
+                // Ensure we're within bounds
+                const clampedX = Math.max(0, Math.min(relativeX, rect.width));
+                const clampedY = Math.max(0, Math.min(relativeY, rect.height));
+                
+                // Use naturalWidth if available, otherwise use display dimensions
+                const naturalWidth = screen.naturalWidth || 1280;
+                const naturalHeight = screen.naturalHeight || 720;
+                
+                // Calculate scale factors
+                const scaleX = naturalWidth / rect.width;
+                const scaleY = naturalHeight / rect.height;
+                
+                // Scale to actual screen coordinates
+                const x = Math.round(clampedX * scaleX);
+                const y = Math.round(clampedY * scaleY);
+                
+                // Clamp to screen dimensions
+                const finalX = Math.max(0, Math.min(x, naturalWidth - 1));
+                const finalY = Math.max(0, Math.min(y, naturalHeight - 1));
+                
+                return { x: finalX, y: finalY };
+            }
+            
+            // Mouse move tracking - INSTANT, NO THROTTLE
+            screenWrapper.addEventListener('mousemove', function(e) {
+                if (!isConnected) return;
+                
+                const { x, y } = getScaledCoords(e);
+                
+                // Only send if position actually changed
+                if (x === lastX && y === lastY) return;
+                
+                lastX = x;
+                lastY = y;
+                
+                // Send immediately - no throttle
+                sendMouse('move', x, y);
+            });
+            
+            // Mouse down
+            screenWrapper.addEventListener('mousedown', function(e) {
+                if (!isConnected) return;
+                e.preventDefault();
+                
+                isDragging = true;
+                const { x, y } = getScaledCoords(e);
+                lastX = x;
+                lastY = y;
+                
+                if (e.button === 0) {
+                    sendMouse('mousedown', x, y);
+                } else if (e.button === 2) {
+                    sendMouse('rightmousedown', x, y);
+                }
+            });
+            
+            // Mouse up
+            screenWrapper.addEventListener('mouseup', function(e) {
+                if (!isConnected) return;
+                e.preventDefault();
+                
+                const { x, y } = getScaledCoords(e);
+                
+                if (e.button === 0) {
+                    sendMouse('mouseup', x, y);
+                } else if (e.button === 2) {
+                    sendMouse('rightmouseup', x, y);
                 }
                 
-                // Handle audio paste
-                if (item.type.indexOf('audio') !== -1) {
-                    e.preventDefault();
-                    const file = item.getAsFile();
-                    handleFileSelect(file, 'audio');
-                    break;
-                }
-            }
-        });
-
-        function handleFileSelect(file, type) {
-            if (!file) return;
-
-            // Check file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('File size must be less than 5MB');
-                return;
-            }
-
-            selectedFile = file;
-            fileType = type;
-
-            // Show preview
-            filePreview.classList.add('active');
-            fileName.textContent = file.name;
-
-            if (type === 'image') {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    filePreviewContent.innerHTML = '';
-                    filePreviewContent.appendChild(img);
-                    const info = document.createElement('div');
-                    info.className = 'file-preview-info';
-                    info.innerHTML = `<div class="file-preview-name">${file.name}</div>`;
-                    filePreviewContent.appendChild(info);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                filePreviewContent.innerHTML = `
-                    <div class="file-preview-info">
-                        <div class="file-preview-name">🎵 ${file.name}</div>
-                        <div>${(file.size / 1024).toFixed(2)} KB</div>
-                    </div>
-                `;
-            }
-        }
-
-        removeFileBtn.addEventListener('click', () => {
-            selectedFile = null;
-            fileType = null;
-            filePreview.classList.remove('active');
-            imageInput.value = '';
-            audioInput.value = '';
-        });
-
-        // Cancel upload button
-        const cancelUploadBtn = document.getElementById('cancelUploadBtn');
-        cancelUploadBtn.addEventListener('click', () => {
-            if (currentUploadTask) {
-                currentUploadTask.cancel();
-                currentUploadTask = null;
-                uploadProgress.classList.remove('active');
-                progressFill.style.width = '0%';
-                console.log('Upload cancelled by user');
-            }
-        });
-
-        // Upload file to Firebase Storage
-        async function uploadFile(file, type) {
-            const timestamp = Date.now();
-            const filename = `${type}s/${userId}_${timestamp}_${file.name}`;
-            const fileRef = storageRef(storage, filename);
+                isDragging = false;
+            });
             
-            uploadProgress.classList.add('active');
+            // Prevent context menu
+            screenWrapper.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
             
-            const uploadTask = uploadBytesResumable(fileRef, file);
-            currentUploadTask = uploadTask; // Store for cancellation
-
-            return new Promise((resolve, reject) => {
-                // Add timeout to prevent hanging - reduced to 10 seconds
-                const timeout = setTimeout(() => {
-                    uploadProgress.classList.remove('active');
-                    progressFill.style.width = '0%';
-                    currentUploadTask = null;
-                    reject(new Error('Upload timeout (10s) - Firebase Storage may not be configured. Check console for setup instructions.'));
-                }, 10000); // 10 second timeout
-
-                uploadTask.on('state_changed',
-                    (snapshot) => {
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        progressFill.style.width = progress + '%';
-                        console.log('Upload progress:', progress.toFixed(1) + '%');
-                    },
-                    (error) => {
-                        clearTimeout(timeout);
-                        uploadProgress.classList.remove('active');
-                        progressFill.style.width = '0%';
-                        currentUploadTask = null;
-                        console.error('Upload error:', error);
-                        console.error('Error code:', error.code);
-                        console.error('Error message:', error.message);
-                        reject(error);
-                    },
-                    async () => {
-                        clearTimeout(timeout);
-                        try {
-                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                            uploadProgress.classList.remove('active');
-                            progressFill.style.width = '0%';
-                            currentUploadTask = null;
-                            console.log('Upload successful:', downloadURL);
-                            resolve(downloadURL);
-                        } catch (error) {
-                            uploadProgress.classList.remove('active');
-                            progressFill.style.width = '0%';
-                            currentUploadTask = null;
-                            console.error('Error getting download URL:', error);
-                            reject(error);
-                        }
-                    }
-                );
-            });
-        }
-
-        // Initialize chat
-        function initializeChat() {
-            currentNickname = localStorage.getItem('chatNickname');
-            if (!currentNickname) {
-                currentNickname = currentUser;
-                localStorage.setItem('chatNickname', currentNickname);
-            }
-            document.getElementById('nicknameInput').value = currentNickname;
-
-            const JOIN_COOLDOWN = 5 * 60 * 1000;
-            const MESSAGE_LIFETIME = 5 * 60 * 1000;
-
-            const messagesContainer = document.getElementById('messagesContainer');
-            const messageInput = document.getElementById('messageInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const nicknameInput = document.getElementById('nicknameInput');
-            const setNicknameBtn = document.getElementById('setNicknameBtn');
-
-            // Set nickname
-            setNicknameBtn.addEventListener('click', () => {
-                const newNickname = nicknameInput.value.trim();
-                if (newNickname && newNickname.length > 0) {
-                    const oldNickname = currentNickname;
-                    currentNickname = newNickname;
-                    localStorage.setItem('chatNickname', currentNickname);
-                    
-                    const systemMsgRef = push(ref(database, 'chat/messages'));
-                    set(systemMsgRef, {
-                        type: 'system',
-                        text: `${oldNickname} changed their name to ${currentNickname}`,
-                        timestamp: Date.now()
-                    });
-
-                    nicknameInput.blur();
-                }
-            });
-
-            nicknameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    setNicknameBtn.click();
-                }
-            });
-
-            // Send message with rate limiting
-            let lastMessageTime = 0;
-            const MESSAGE_COOLDOWN = 1000;
-
-            async function sendMessage() {
-                console.log('Send message called');
-                const messageText = messageInput.value.trim();
+            // Mouse wheel scrolling
+            screenWrapper.addEventListener('wheel', function(e) {
+                if (!isConnected) return;
+                e.preventDefault();
                 
-                // Check if there's either text or a file
-                if (!messageText && !selectedFile) {
-                    console.log('No message text or file');
-                    return;
-                }
-
-                const currentTime = Date.now();
-                const timeSinceLastMessage = currentTime - lastMessageTime;
-
-                if (timeSinceLastMessage < MESSAGE_COOLDOWN) {
-                    messageInput.placeholder = 'Please wait before sending another message...';
-                    setTimeout(() => {
-                        messageInput.placeholder = 'Type a message...';
-                    }, 2000);
-                    return;
-                }
-
-                console.log('Creating message data...');
-                const messageData = {
-                    type: 'message',
-                    nickname: currentNickname,
-                    userId: userId,
-                    timestamp: currentTime
-                };
+                const { x, y } = getScaledCoords(e);
+                const scrollAmount = Math.round(e.deltaY / 10);
                 
-                // Add IP if available
-                if (userIP) {
-                    messageData.userIP = userIP;
-                }
-
-                // Add text if present
-                if (messageText) {
-                    messageData.text = messageText;
-                    console.log('Added text to message');
-                }
-
-                // Upload file if present
-                if (selectedFile) {
-                    try {
-                        const fileURL = await uploadFile(selectedFile, fileType);
-                        messageData.fileURL = fileURL;
-                        messageData.fileType = fileType;
-                        messageData.fileName = selectedFile.name;
-                    } catch (error) {
-                        console.error('Error uploading file:', error);
-                        uploadProgress.classList.remove('active');
-                        progressFill.style.width = '0%';
-                        
-                        // Show specific error message
-                        let errorMsg = 'Failed to upload file. ';
-                        if (error.code === 'storage/unauthorized') {
-                            errorMsg += 'Storage permissions not configured.';
-                        } else if (error.message && error.message.includes('timeout')) {
-                            errorMsg += 'Upload timed out.';
-                        } else {
-                            errorMsg += 'Error: ' + (error.message || 'Unknown error');
-                        }
-                        
-                        // Ask if user wants to send text without the file
-                        if (messageText) {
-                            const sendAnyway = confirm(errorMsg + '\n\nDo you want to send the text message without the file?');
-                            if (!sendAnyway) {
-                                return;
-                            }
-                            // Clear file selection but continue to send text
-                            selectedFile = null;
-                            fileType = null;
-                            filePreview.classList.remove('active');
-                            imageInput.value = '';
-                            audioInput.value = '';
-                        } else {
-                            alert(errorMsg);
-                            return;
-                        }
-                    }
-                }
-
-                const messageRef = push(ref(database, 'chat/messages'));
-                console.log('Sending message to database...');
-                await set(messageRef, messageData);
-                console.log('Message sent successfully!');
-
-                lastMessageTime = currentTime;
-                messageInput.value = '';
-                selectedFile = null;
-                fileType = null;
-                filePreview.classList.remove('active');
-                uploadProgress.classList.remove('active');
-                progressFill.style.width = '0%';
-                imageInput.value = '';
-                audioInput.value = '';
-                messageInput.focus();
-            }
-
-            sendBtn.addEventListener('click', sendMessage);
-            messageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
+                sendMouse('scroll', x, y, -scrollAmount);
+            });
+            
+            // REAL KEYBOARD PASSTHROUGH
+            document.addEventListener('keydown', function(e) {
+                if (!isConnected) return;
+                if (document.activeElement.tagName === 'INPUT' || 
+                    document.activeElement.tagName === 'SELECT') return;
+                
+                e.preventDefault();
+                
+                // Send the actual key pressed
+                let key = e.key;
+                
+                // Handle special keys
+                if (key === ' ') key = 'space';
+                else if (key === 'Control') key = 'ctrl';
+                else if (key === 'Alt') key = 'alt';
+                else if (key === 'Shift') key = 'shift';
+                else if (key === 'Meta') key = 'win';
+                else if (key === 'ArrowUp') key = 'up';
+                else if (key === 'ArrowDown') key = 'down';
+                else if (key === 'ArrowLeft') key = 'left';
+                else if (key === 'ArrowRight') key = 'right';
+                
+                sendKey(key, true);
+            });
+            
+            document.addEventListener('keyup', function(e) {
+                if (!isConnected) return;
+                if (document.activeElement.tagName === 'INPUT' || 
+                    document.activeElement.tagName === 'SELECT') return;
+                
+                e.preventDefault();
+                
+                let key = e.key;
+                
+                // Handle special keys
+                if (key === ' ') key = 'space';
+                else if (key === 'Control') key = 'ctrl';
+                else if (key === 'Alt') key = 'alt';
+                else if (key === 'Shift') key = 'shift';
+                else if (key === 'Meta') key = 'win';
+                else if (key === 'ArrowUp') key = 'up';
+                else if (key === 'ArrowDown') key = 'down';
+                else if (key === 'ArrowLeft') key = 'left';
+                else if (key === 'ArrowRight') key = 'right';
+                
+                sendKey(key, false);
             });
 
-            // Listen for messages - Fixed ordering issue
-            const messagesRef = ref(database, 'chat/messages');
-            let isInitialLoad = true;
-            let previousMessageIds = new Set();
-
-            onValue(messagesRef, (snapshot) => {
-                const messages = snapshot.val();
-                
-                if (!messages) {
-                    messagesContainer.innerHTML = `
-                        <div class="empty-state">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                            </svg>
-                            <div>No messages yet. Start the conversation!</div>
-                        </div>
-                    `;
-                    return;
-                }
-
-                // Sort messages by timestamp
-                const sortedMessages = Object.entries(messages)
-                    .map(([id, msg]) => ({ id, ...msg }))
-                    .sort((a, b) => a.timestamp - b.timestamp);
-
-                // Detect new messages
-                const currentMessageIds = new Set(sortedMessages.map(m => m.id));
-                const newMessages = sortedMessages.filter(m => !previousMessageIds.has(m.id));
-
-                // Only scroll if it's initial load or new messages
-                const shouldScroll = isInitialLoad || newMessages.length > 0;
-                const wasAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + 100;
-
-                // Render all messages
-                messagesContainer.innerHTML = '';
-                sortedMessages.forEach(msg => {
-                    const messageDiv = document.createElement('div');
-                    
-                    if (msg.type === 'system') {
-                        messageDiv.className = 'system-message';
-                        messageDiv.textContent = msg.text;
-                    } else {
-                        messageDiv.className = 'message';
-                        if (msg.userId === userId) {
-                            messageDiv.classList.add('own');
-                        }
-                        
-                        // Add VIP styling for special IP
-                        if (msg.userIP === VIP_IP) {
-                            messageDiv.classList.add('vip');
-                        }
-
-                        const time = new Date(msg.timestamp).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true
-                        });
-
-                        let messageContent = '';
-                        
-                        // Add text if present
-                        if (msg.text) {
-                            messageContent += `<div class="message-text">${escapeHtml(msg.text)}</div>`;
-                        }
-
-                        // Add media if present
-                        if (msg.fileURL) {
-                            if (msg.fileType === 'image') {
-                                messageContent += `
-                                    <div class="message-media">
-                                        <img src="${msg.fileURL}" alt="${escapeHtml(msg.fileName || 'Image')}" loading="lazy">
-                                    </div>
-                                `;
-                            } else if (msg.fileType === 'audio') {
-                                messageContent += `
-                                    <div class="message-media">
-                                        <audio controls>
-                                            <source src="${msg.fileURL}" type="audio/mpeg">
-                                            Your browser does not support the audio element.
-                                        </audio>
-                                    </div>
-                                `;
-                            }
-                        }
-
-                        messageDiv.innerHTML = `
-                            <div class="message-header">
-                                <span class="message-nickname">${escapeHtml(msg.nickname)}</span>
-                                <span class="message-time">${time}</span>
-                            </div>
-                            ${messageContent}
-                        `;
-                    }
-
-                    messagesContainer.appendChild(messageDiv);
-                });
-
-                // Auto scroll only if user was at bottom or it's a new message
-                if (shouldScroll && (isInitialLoad || wasAtBottom)) {
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                }
-
-                // Update tracking variables
-                previousMessageIds = currentMessageIds;
-                isInitialLoad = false;
+            // Password field enter key
+            document.getElementById('password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') connect();
             });
-
-            // Utility function to escape HTML
-            function escapeHtml(text) {
-                const map = {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#039;'
-                };
-                return text.replace(/[&<>"']/g, m => map[m]);
-            }
-
-            // Send join message with cooldown
-            window.addEventListener('load', () => {
-                const currentTime = Date.now();
-                
-                const userJoinRef = ref(database, `chat/userJoins/${userId}`);
-                onValue(userJoinRef, (snapshot) => {
-                    const lastJoin = snapshot.val();
-                    const lastJoinTimestamp = lastJoin ? lastJoin.timestamp : 0;
-                    const timeSinceLastJoin = currentTime - lastJoinTimestamp;
-                    
-                    if (timeSinceLastJoin >= JOIN_COOLDOWN) {
-                        const joinMsgRef = push(ref(database, 'chat/messages'));
-                        set(joinMsgRef, {
-                            type: 'system',
-                            text: `${currentNickname} joined the chat`,
-                            timestamp: currentTime,
-                            userId: userId
-                        });
-                        
-                        set(userJoinRef, {
-                            timestamp: currentTime,
-                            nickname: currentNickname
-                        });
-                    }
-                }, { onlyOnce: true });
-            });
-
-            // Auto-delete old messages
-            setInterval(() => {
-                onValue(messagesRef, (snapshot) => {
-                    const messages = snapshot.val();
-                    if (!messages) return;
-
-                    const currentTime = Date.now();
-                    const messageArray = Object.entries(messages)
-                        .map(([id, msg]) => ({ id, ...msg }));
-
-                    messageArray.forEach(msg => {
-                        const messageAge = currentTime - msg.timestamp;
-                        if (messageAge > MESSAGE_LIFETIME) {
-                            remove(ref(database, `chat/messages/${msg.id}`));
-                        }
-                    });
-                }, { onlyOnce: true });
-
-                const userJoinsRef = ref(database, 'chat/userJoins');
-                onValue(userJoinsRef, (snapshot) => {
-                    const userJoins = snapshot.val();
-                    if (!userJoins) return;
-
-                    const currentTime = Date.now();
-                    const oneHour = 60 * 60 * 1000;
-
-                    Object.entries(userJoins).forEach(([uid, data]) => {
-                        const age = currentTime - data.timestamp;
-                        if (age > oneHour) {
-                            remove(ref(database, `chat/userJoins/${uid}`));
-                        }
-                    });
-                }, { onlyOnce: true });
-            }, 30000);
-        }
-
-        // Check for auto-login on page load
-        checkAutoLogin();
+        });
     </script>
 </body>
 </html>
